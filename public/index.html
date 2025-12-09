@@ -2,13 +2,41 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 这一行让网页在手机上显示比例正常 -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
     <title>我的生活账本</title>
-    <!-- 引入 Tailwind CSS (装修队) -->
+
+    <!-- 引入装修队 (Tailwind CSS) -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 1. 网页标签页的小图标 (Favicon) -->
+    <link
+      rel="icon"
+      href="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f4d2.png"
+    />
+
+    <!-- 2. ★★★ 苹果手机桌面图标 (Apple Touch Icon) ★★★ -->
+    <!-- 这里用了一个在线的“手账本”Emoji图片作为图标，您也可以换成其他图片链接 -->
+    <link
+      rel="apple-touch-icon"
+      href="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f4d2.png"
+    />
+
+    <!-- 3. 让它更像原生 App (隐藏 Safari 顶栏底栏) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
   </head>
-  <body>
-    <!-- React 程序的挂载点 (地基) -->
+
+  <body class="bg-[#fdfcf8]">
+    <!-- 这里的 id="root" 是程序的家，千万别删！ -->
     <div id="root"></div>
   </body>
 </html>
+

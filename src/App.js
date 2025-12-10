@@ -1,194 +1,97 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
-// --- 1. 零依赖图标库 (内置SVG) ---
-const IconBase = ({ size = 24, children, className = "", ...props }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>{children}</svg>
-);
-
+// --- 1. 基础配置与图标 (原生SVG，最稳定) ---
 const Icons = {
-  Wallet: (p) => <IconBase {...p}><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12h.01"/></IconBase>,
-  Calendar: (p) => <IconBase {...p}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></IconBase>,
-  CheckSquare: (p) => <IconBase {...p}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></IconBase>,
-  Utensils: (p) => <IconBase {...p}><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></IconBase>,
-  Trash2: (p) => <IconBase {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></IconBase>,
-  Plus: (p) => <IconBase {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></IconBase>,
-  ChevronLeft: (p) => <IconBase {...p}><polyline points="15 18 9 12 15 6"/></IconBase>,
-  ChevronRight: (p) => <IconBase {...p}><polyline points="9 18 15 12 9 6"/></IconBase>,
-  Coffee: (p) => <IconBase {...p}><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></IconBase>,
-  Sun: (p) => <IconBase {...p}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></IconBase>,
-  Moon: (p) => <IconBase {...p}><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></IconBase>,
-  Layout: (p) => <IconBase {...p}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></IconBase>,
-  Receipt: (p) => <IconBase {...p}><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M16 8h-6"/><path d="M16 12h-6"/><path d="M16 16h-6"/></IconBase>,
-  TrendingUp: (p) => <IconBase {...p}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></IconBase>,
-  TrendingDown: (p) => <IconBase {...p}><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></IconBase>,
-  Home: (p) => <IconBase {...p}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></IconBase>,
-  PieChart: (p) => <IconBase {...p}><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></IconBase>,
-  ShoppingBag: (p) => <IconBase {...p}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></IconBase>,
-  Refrigerator: (p) => <IconBase {...p}><path d="M5 2h14a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><line x1="5" y1="10" x2="19" y2="10"/><path d="M15 2v20"/></IconBase>,
-  Gift: (p) => <IconBase {...p}><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></IconBase>,
-  ArrowRight: (p) => <IconBase {...p}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></IconBase>,
-  Download: (p) => <IconBase {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></IconBase>,
-  Eye: (p) => <IconBase {...p}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></IconBase>,
-  EyeOff: (p) => <IconBase {...p}><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></IconBase>,
-  Globe: (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></IconBase>,
-  Target: (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></IconBase>,
-  Trophy: (p) => <IconBase {...p}><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10"/><path d="M17 4v3a5 5 0 0 1-5 5h0a5 5 0 0 1-5-5V4"/><path d="M5 9v2a2 2 0 0 0 2 2h0"/><path d="M19 11v-2a2 2 0 0 0-2-2h0"/></IconBase>,
-  PenTool: (p) => <IconBase {...p}><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></IconBase>,
-  Camera: (p) => <IconBase {...p}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></IconBase>,
-  Image: (p) => <IconBase {...p}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></IconBase>
+  Home: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+  Wallet: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12h.01"/></svg>,
+  Calendar: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+  CheckSquare: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>,
+  Utensils: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>,
+  Trash2: () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>,
+  Plus: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  ChevronLeft: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>,
+  ChevronRight: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>,
+  Coffee: () => <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>,
+  Sun: () => <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>,
+  Moon: () => <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>,
+  Layout: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>,
+  Receipt: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M16 8h-6"/><path d="M16 12h-6"/><path d="M16 16h-6"/></svg>,
+  TrendingUp: () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
+  TrendingDown: () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>,
+  PieChart: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>,
+  ShoppingBag: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
+  Refrigerator: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 2h14a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><line x1="5" y1="10" x2="19" y2="10"/><path d="M15 2v20"/></svg>,
+  Gift: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>,
+  ArrowRight: () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+  Download: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+  Eye: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+  EyeOff: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>,
+  Globe: () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+  Target: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+  Trophy: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10"/><path d="M17 4v3a5 5 0 0 1-5 5h0a5 5 0 0 1-5-5V4"/><path d="M5 9v2a2 2 0 0 0 2 2h0"/><path d="M19 11v-2a2 2 0 0 0-2-2h0"/></svg>,
+  PenTool: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>,
+  Camera: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>,
+  Image: () => <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
 };
 
-// --- 2. 多语言字典 ---
-const TRANSLATIONS = {
-  zh: {
-    appTitle: "生活账本",
-    slogan: "好好吃饭，好好生活。",
-    backHome: "返回首页",
-    totalExpense: "年度总支出 (已花)",
-    totalBalance: "年度总结余 (预估)",
-    exchangeRate: "汇率设置 (1 RMB)",
-    supplies: "生活补给",
-    inventory: "冰箱余粮",
-    wishlist: "心愿清单",
-    inventoryPlaceholder: "还有啥? (输入回车)",
-    wishlistPlaceholder: "想买啥?",
-    qty: "剩多少?",
-    clickToManage: "点击管理库存与清单",
-    fixedExp: "固定支出",
-    income: "收入",
-    dailyExp: "日常支出",
-    monthly: "本月",
-    month: "月",
-    weekView: "周视图",
-    weekGoal: "本周目标",
-    addGoal: "添加新任务...",
-    record: "记一笔",
-    recordBtn: "记账",
-    itemName: "项目名称",
-    date: "日期",
-    amount: "金额",
-    mealPlan: "本周食谱",
-    fixedMonthly: "本月固定收支",
-    fixedType: "不随周变动",
-    addFixed: "添加固定项目",
-    expense: "支出",
-    details: "本周明细",
-    noDetails: "本周暂无消费记录",
-    yearlyGoalsTitle: "年度目标与回忆",
-    myGoals: "我的年度目标",
-    addYearlyGoal: "立个 Flag (回车)",
-    yearReview: "年度小结",
-    reviewPlaceholder: "这一年过得怎么样？写点什么吧...",
-    topPurchases: "高光消费 (Top 5)",
-    topPurchasesSub: "看看钱都花哪了",
-    modeExpenditure: "支出概览",
-    modeBalance: "全能收支",
-    photoGallery: "年度高光时刻 (12张)",
-    photoGallerySub: "每月一张，记录生活",
-    uploadPhoto: "上传本月照片"
-  },
-  jp: {
-    appTitle: "生活家計簿",
-    slogan: "よく食べ、よく生きる。",
-    backHome: "ホームに戻る",
-    totalExpense: "年間総支出 (実績)",
-    totalBalance: "年間収支 (予想)",
-    exchangeRate: "為替レート (1 RMB)",
-    supplies: "生活用品",
-    inventory: "冷蔵庫の中身",
-    wishlist: "欲しいものリスト",
-    inventoryPlaceholder: "他にある？(Enter)",
-    wishlistPlaceholder: "何が欲しい？",
-    qty: "残量は？",
-    clickToManage: "在庫とリストを管理",
-    fixedExp: "固定費",
-    income: "収入",
-    dailyExp: "生活費",
-    monthly: "今月",
-    month: "月",
-    weekView: "週間ビュー",
-    weekGoal: "今週の目標",
-    addGoal: "タスクを追加...",
-    record: "記帳する",
-    recordBtn: "保存",
-    itemName: "項目名",
-    date: "日付",
-    amount: "金額",
-    mealPlan: "今週の献立",
-    fixedMonthly: "月次固定収支",
-    fixedType: "毎月固定",
-    addFixed: "固定費を追加",
-    expense: "支出",
-    details: "今週の明細",
-    noDetails: "記録はありません",
-    yearlyGoalsTitle: "年間目標と振り返り",
-    myGoals: "今年の目標",
-    addYearlyGoal: "目標を追加 (Enter)",
-    yearReview: "年間レビュー",
-    reviewPlaceholder: "今年はどんな一年でしたか？",
-    topPurchases: "高額出費 (Top 5)",
-    topPurchasesSub: "何を買ったかな？",
-    modeExpenditure: "支出のみ",
-    modeBalance: "収支管理",
-    photoGallery: "年間ハイライト (12枚)",
-    photoGallerySub: "毎月のベストショット",
-    uploadPhoto: "写真をアップ"
-  },
-  en: {
-    appTitle: "Life Ledger",
-    slogan: "Eat well, live well.",
-    backHome: "Home",
-    totalExpense: "Total Expense",
-    totalBalance: "Total Balance",
-    exchangeRate: "Exchange Rate (1 RMB)",
-    supplies: "Supplies",
-    inventory: "Pantry",
-    wishlist: "Wishlist",
-    inventoryPlaceholder: "Add item... (Enter)",
-    wishlistPlaceholder: "Want to buy...",
-    qty: "Qty?",
-    clickToManage: "Manage Inventory & List",
-    fixedExp: "Fixed",
-    income: "Income",
-    dailyExp: "Daily Exp",
-    monthly: "Monthly",
-    month: "Mon", 
-    weekView: "Week View",
-    weekGoal: "Weekly Goals",
-    addGoal: "Add task...",
-    record: "Add Transaction",
-    recordBtn: "Save",
-    itemName: "Item Name",
-    date: "Date",
-    amount: "Amount",
-    mealPlan: "Meal Plan",
-    fixedMonthly: "Monthly Fixed",
-    fixedType: "Recurring",
-    addFixed: "Add Fixed Item",
-    expense: "Exp",
-    details: "Weekly Details",
-    noDetails: "No transactions yet",
-    yearlyGoalsTitle: "Yearly Goals & Gallery",
-    myGoals: "Yearly Goals",
-    addYearlyGoal: "Add a Goal (Enter)",
-    yearReview: "Yearly Review",
-    reviewPlaceholder: "How was this year?",
-    topPurchases: "Top Purchases",
-    topPurchasesSub: "Where did the money go?",
-    modeExpenditure: "Expense Only",
-    modeBalance: "Full Balance",
-    photoGallery: "Yearly Highlights",
-    photoGallerySub: "One photo per month",
-    uploadPhoto: "Upload Photo"
-  }
-};
-
-// --- 3. 每日一句 ---
+// --- 2. 每日一句语录库 ---
 const DAILY_QUOTES = [
   "把钱花在刀刃上。", "好好吃饭，好好生活。", "今天的克制，是为了明天的自由。",
   "不积跬步，无以至千里。", "生活原本沉闷，但跑起来就有风。", "物尽其用，就是最大的惜福。",
   "每一笔支出，都是在为想要的生活投票。", "快乐不一定要很贵。"
 ];
+
+// --- 3. 多语言字典 ---
+const TRANSLATIONS = {
+  zh: {
+    appTitle: "生活账本", backHome: "返回首页", totalExpense: "年度总支出 (已花)",
+    totalBalance: "年度总结余 (预估)", exchangeRate: "汇率设置 (1 RMB)", supplies: "生活补给",
+    inventory: "冰箱余粮", wishlist: "心愿清单", inventoryPlaceholder: "还有啥? (输入回车)",
+    wishlistPlaceholder: "想买啥?", qty: "剩多少?", clickToManage: "点击管理库存与清单",
+    fixedExp: "固定支出", income: "收入", dailyExp: "日常支出", monthly: "本月",
+    month: "月", weekView: "周视图", weekGoal: "本周目标", addGoal: "添加新任务...",
+    record: "记一笔", recordBtn: "记账", itemName: "项目名称", date: "日期", amount: "金额",
+    mealPlan: "本周食谱", fixedMonthly: "本月固定收支", fixedType: "不随周变动",
+    addFixed: "添加固定项目", expense: "支出", details: "本周明细", noDetails: "本周暂无消费记录",
+    yearlyGoalsTitle: "年度目标与回忆", myGoals: "我的年度目标", addYearlyGoal: "立个 Flag (回车)",
+    yearReview: "年度小结", reviewPlaceholder: "这一年过得怎么样？写点什么吧...",
+    topPurchases: "高光消费 (Top 5)", topPurchasesSub: "看看钱都花哪了", modeExpenditure: "支出概览",
+    modeBalance: "全能收支", photoGallery: "年度高光时刻 (12张)", photoGallerySub: "每月一张，记录生活",
+    uploadPhoto: "上传本月照片"
+  },
+  jp: {
+    appTitle: "生活家計簿", backHome: "ホームに戻る", totalExpense: "年間総支出 (実績)",
+    totalBalance: "年間収支 (予想)", exchangeRate: "為替レート (1 RMB)", supplies: "生活用品",
+    inventory: "冷蔵庫の中身", wishlist: "欲しいものリスト", inventoryPlaceholder: "他にある？(Enter)",
+    wishlistPlaceholder: "何が欲しい？", qty: "残量は？", clickToManage: "在庫とリストを管理",
+    fixedExp: "固定費", income: "収入", dailyExp: "生活費", monthly: "今月",
+    month: "月", weekView: "週間ビュー", weekGoal: "今週の目標", addGoal: "タスクを追加...",
+    record: "記帳する", recordBtn: "保存", itemName: "項目名", date: "日付", amount: "金額",
+    mealPlan: "今週の献立", fixedMonthly: "月次固定収支", fixedType: "毎月固定",
+    addFixed: "固定費を追加", expense: "支出", details: "今週の明細", noDetails: "記録はありません",
+    yearlyGoalsTitle: "年間目標と振り返り", myGoals: "今年の目標", addYearlyGoal: "目標を追加 (Enter)",
+    yearReview: "年間レビュー", reviewPlaceholder: "今年はどんな一年でしたか？",
+    topPurchases: "高額出費 (Top 5)", topPurchasesSub: "何を買ったかな？", modeExpenditure: "支出のみ",
+    modeBalance: "収支管理", photoGallery: "年間ハイライト (12枚)", photoGallerySub: "毎月のベストショット",
+    uploadPhoto: "写真をアップ"
+  },
+  en: {
+    appTitle: "Life Ledger", backHome: "Home", totalExpense: "Total Expense",
+    totalBalance: "Total Balance", exchangeRate: "Exchange Rate (1 RMB)", supplies: "Supplies",
+    inventory: "Pantry", wishlist: "Wishlist", inventoryPlaceholder: "Add item... (Enter)",
+    wishlistPlaceholder: "Want to buy...", qty: "Qty?", clickToManage: "Manage Inventory & List",
+    fixedExp: "Fixed", income: "Income", dailyExp: "Daily Exp", monthly: "Monthly",
+    month: "Mon", weekView: "Week View", weekGoal: "Weekly Goals", addGoal: "Add task...",
+    record: "Add Transaction", recordBtn: "Save", itemName: "Item Name", date: "Date", amount: "Amount",
+    mealPlan: "Meal Plan", fixedMonthly: "Monthly Fixed", fixedType: "Recurring",
+    addFixed: "Add Fixed Item", expense: "Exp", details: "Weekly Details", noDetails: "No transactions yet",
+    yearlyGoalsTitle: "Yearly Goals & Gallery", myGoals: "Yearly Goals", addYearlyGoal: "Add a Goal (Enter)",
+    yearReview: "Yearly Review", reviewPlaceholder: "How was this year?",
+    topPurchases: "Top Purchases", topPurchasesSub: "Where did the money go?", modeExpenditure: "Expense Only",
+    modeBalance: "Full Balance", photoGallery: "Yearly Highlights", photoGallerySub: "One photo per month",
+    uploadPhoto: "Upload Photo"
+  }
+};
 
 // --- 4. 工具函数 ---
 const getMonday = (d) => {
@@ -217,39 +120,33 @@ const formatDateISO = (date) => {
   return date.toISOString().split('T')[0];
 };
 
-// 简单的图片压缩函数
-const compressImage = (file, maxWidth = 500, quality = 0.7) => {
+const compressImage = (file) => {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = (event) => {
+    reader.onload = (e) => {
       const img = new Image();
-      img.src = event.target.result;
+      img.src = e.target.result;
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-        if (width > maxWidth) {
-          height *= maxWidth / width;
-          width = maxWidth;
-        }
-        canvas.width = width;
-        canvas.height = height;
+        let w = img.width, h = img.height;
+        if(w > 500) { h *= 500/w; w=500; }
+        canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      }
     };
   });
 };
 
 // --- 5. 组件 ---
-const Card = ({ children, className = "", title, icon: IconComponent, action, onClick }) => (
-  <div onClick={onClick} className={`bg-[#fffbf0] rounded-3xl shadow-[4px_4px_0px_0px_rgba(234,224,200,1)] border-2 border-[#efeadd] p-4 md:p-5 ${className} transition-all duration-300 ${onClick ? 'cursor-pointer hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(234,224,200,1)] active:translate-y-0 active:shadow-none' : ''}`}>
-    {(title || IconComponent) && (
+const Card = ({ children, className = "", title, icon: Icon, action, onClick }) => (
+  <div onClick={onClick} className={`bg-[#fffbf0] rounded-3xl shadow-[4px_4px_0px_0px_rgba(234,224,200,1)] border-2 border-[#efeadd] p-4 md:p-5 ${className} transition-all duration-300 ${onClick ? 'cursor-pointer hover:-translate-y-1 hover:shadow-md' : ''}`}>
+    {(title || Icon) && (
       <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-[#efeadd]/50 border-dashed">
         <div className="flex items-center gap-2 text-[#8c7b6d] font-bold text-base md:text-lg">
-          {IconComponent && <IconComponent size={18} className="text-[#e6b422]" />}
+          {Icon && <Icon />}
           <h2>{title}</h2>
         </div>
         {action}
@@ -278,10 +175,9 @@ export default function App() {
   const [wishlist, setWishlist] = useState([{ id: 1, name: 'Switch', price: 6500, note: '' }]);
   const [yearlyGoals, setYearlyGoals] = useState([{id: 1, text: '坚持记账', completed: false}]);
   const [yearlyReview, setYearlyReview] = useState("");
-  // 新增：月度照片存储 { "2025-0": "base64...", "2025-1": "..." }
   const [monthlyPhotos, setMonthlyPhotos] = useState({});
 
-  const STORAGE_KEY = 'warmLifeApp_v22_photos'; 
+  const STORAGE_KEY = 'warmLifeApp_v24_final_fixed'; 
   const t = TRANSLATIONS[lang]; 
 
   useEffect(() => {
@@ -329,7 +225,6 @@ export default function App() {
     document.body.removeChild(link);
   };
 
-  // 处理照片上传
   const handlePhotoUpload = async (e, monthIndex) => {
     const file = e.target.files[0];
     if (!file) return;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-// --- 1. 基础图标组件 (拆分为独立组件，最稳健) ---
+// --- 1. 基础图标组件 (无需安装，复制即用) ---
 const IconWrapper = ({ children, size = 24, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
 );
@@ -35,6 +35,9 @@ const TrophyIcon = (p) => <IconWrapper {...p}><path d="M8 21h8"/><path d="M12 17
 const PenToolIcon = (p) => <IconWrapper {...p}><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></IconWrapper>;
 const CameraIcon = (p) => <IconWrapper {...p}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></IconWrapper>;
 const ImageIcon = (p) => <IconWrapper {...p}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></IconWrapper>;
+const AlertCircleIcon = (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></IconWrapper>;
+const RefreshIcon = (p) => <IconWrapper {...p}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></IconWrapper>;
+const XIcon = (p) => <IconWrapper {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></IconWrapper>;
 
 // --- 2. 每日一句 ---
 const DAILY_QUOTES = [
@@ -43,59 +46,59 @@ const DAILY_QUOTES = [
   "每一笔支出，都是在为想要的生活投票。", "快乐不一定要很贵。"
 ];
 
-// --- 3. 多语言配置 ---
+// --- 3. 多语言字典 ---
 const TRANSLATIONS = {
   zh: {
-    appTitle: "生活账本", backHome: "返回首页", totalExpense: "年度总支出 (已花)",
-    totalBalance: "年度总结余 (预估)", exchangeRate: "汇率设置 (1 RMB)", supplies: "生活补给",
-    inventory: "冰箱余粮", wishlist: "心愿清单", inventoryPlaceholder: "还有啥? (输入回车)",
-    wishlistPlaceholder: "想买啥?", qty: "剩多少?", clickToManage: "点击管理库存与清单",
-    fixedExp: "固定支出", income: "收入", dailyExp: "日常支出", monthly: "本月",
-    month: "月", weekView: "周视图", weekGoal: "本周目标", addGoal: "添加新任务...",
+    appTitle: "生活账本", backHome: "返回", totalExpense: "总支出",
+    totalBalance: "总结余", exchangeRate: "汇率 (1 RMB)", supplies: "生活补给",
+    inventory: "冰箱", wishlist: "心愿", inventoryPlaceholder: "余粮...",
+    wishlistPlaceholder: "想买...", qty: "剩?", clickToManage: "点击管理",
+    fixedExp: "固定", income: "收入", dailyExp: "日常", monthly: "月",
+    month: "月", weekView: "周视图", weekGoal: "本周目标", addGoal: "添加任务...",
     record: "记一笔", recordBtn: "记账", itemName: "项目名称", date: "日期", amount: "金额",
-    mealPlan: "本周食谱", fixedMonthly: "本月固定收支", fixedType: "不随周变动",
-    addFixed: "添加固定项目", expense: "支出", details: "本周明细", noDetails: "本周暂无消费记录",
-    yearlyGoalsTitle: "年度目标与回忆", myGoals: "我的年度目标", addYearlyGoal: "立个 Flag (回车)",
-    yearReview: "年度小结", reviewPlaceholder: "这一年过得怎么样？写点什么吧...",
-    topPurchases: "高光消费 (Top 5)", topPurchasesSub: "看看钱都花哪了", modeExpenditure: "支出概览",
-    modeBalance: "全能收支", photoGallery: "年度高光时刻 (12张)", photoGallerySub: "每月一张，记录生活",
-    uploadPhoto: "上传本月照片"
+    mealPlan: "食谱", fixedMonthly: "固定收支", fixedType: "每月",
+    addFixed: "添加固定项", expense: "支出", details: "明细", noDetails: "暂无记录",
+    yearlyGoalsTitle: "年度目标", myGoals: "我的目标", addYearlyGoal: "立 Flag...",
+    yearReview: "小结", reviewPlaceholder: "写点什么...",
+    topPurchases: "高光消费 (Top 5)", topPurchasesSub: "钱花哪了", modeExpenditure: "支出模式",
+    modeBalance: "收支模式", photoGallery: "年度回忆", photoGallerySub: "每月一张 (点击大图)",
+    uploadPhoto: "上传", urgentMemo: "紧急待办", addUrgent: "加急事...", switchCurrency: "切换显示"
   },
   jp: {
-    appTitle: "生活家計簿", backHome: "ホームに戻る", totalExpense: "年間総支出 (実績)",
-    totalBalance: "年間収支 (予想)", exchangeRate: "為替レート (1 RMB)", supplies: "生活用品",
-    inventory: "冷蔵庫の中身", wishlist: "欲しいものリスト", inventoryPlaceholder: "他にある？(Enter)",
-    wishlistPlaceholder: "何が欲しい？", qty: "残量は？", clickToManage: "在庫とリストを管理",
-    fixedExp: "固定費", income: "収入", dailyExp: "生活費", monthly: "今月",
-    month: "月", weekView: "週間ビュー", weekGoal: "今週の目標", addGoal: "タスクを追加...",
-    record: "記帳する", recordBtn: "保存", itemName: "項目名", date: "日付", amount: "金額",
-    mealPlan: "今週の献立", fixedMonthly: "月次固定収支", fixedType: "毎月固定",
-    addFixed: "固定費を追加", expense: "支出", details: "今週の明細", noDetails: "記録はありません",
-    yearlyGoalsTitle: "年間目標と振り返り", myGoals: "今年の目標", addYearlyGoal: "目標を追加 (Enter)",
-    yearReview: "年間レビュー", reviewPlaceholder: "今年はどんな一年でしたか？",
-    topPurchases: "高額出費 (Top 5)", topPurchasesSub: "何を買ったかな？", modeExpenditure: "支出のみ",
-    modeBalance: "収支管理", photoGallery: "年間ハイライト (12枚)", photoGallerySub: "毎月のベストショット",
-    uploadPhoto: "写真をアップ"
+    appTitle: "生活家計簿", backHome: "戻る", totalExpense: "総支出",
+    totalBalance: "総収支", exchangeRate: "レート(1RMB)", supplies: "生活用品",
+    inventory: "冷蔵庫", wishlist: "心願", inventoryPlaceholder: "在庫...",
+    wishlistPlaceholder: "欲しい...", qty: "残?", clickToManage: "管理する",
+    fixedExp: "固定費", income: "収入", dailyExp: "生活費", monthly: "月",
+    month: "月", weekView: "週間", weekGoal: "今週の目標", addGoal: "タスク...",
+    record: "記帳", recordBtn: "保存", itemName: "項目名", date: "日付", amount: "金額",
+    mealPlan: "献立", fixedMonthly: "固定収支", fixedType: "毎月",
+    addFixed: "固定費追加", expense: "支出", details: "明細", noDetails: "記録なし",
+    yearlyGoalsTitle: "年間目標", myGoals: "今年の目標", addYearlyGoal: "目標追加...",
+    yearReview: "年間レビュー", reviewPlaceholder: "一言...",
+    topPurchases: "高額出費", topPurchasesSub: "何買った?", modeExpenditure: "支出のみ",
+    modeBalance: "収支管理", photoGallery: "年間写真", photoGallerySub: "毎月の記録",
+    uploadPhoto: "写真", urgentMemo: "緊急メモ", addUrgent: "急用...", switchCurrency: "通貨切替"
   },
   en: {
-    appTitle: "Life Ledger", backHome: "Home", totalExpense: "Total Expense",
-    totalBalance: "Total Balance", exchangeRate: "Exchange Rate (1 RMB)", supplies: "Supplies",
-    inventory: "Pantry", wishlist: "Wishlist", inventoryPlaceholder: "Add item... (Enter)",
-    wishlistPlaceholder: "Want to buy...", qty: "Qty?", clickToManage: "Manage Inventory & List",
-    fixedExp: "Fixed", income: "Income", dailyExp: "Daily Exp", monthly: "Monthly",
-    month: "Mon", weekView: "Week View", weekGoal: "Weekly Goals", addGoal: "Add task...",
-    record: "Add Transaction", recordBtn: "Save", itemName: "Item Name", date: "Date", amount: "Amount",
-    mealPlan: "Meal Plan", fixedMonthly: "Monthly Fixed", fixedType: "Recurring",
-    addFixed: "Add Fixed Item", expense: "Exp", details: "Weekly Details", noDetails: "No transactions yet",
-    yearlyGoalsTitle: "Yearly Goals & Gallery", myGoals: "Yearly Goals", addYearlyGoal: "Add a Goal (Enter)",
-    yearReview: "Yearly Review", reviewPlaceholder: "How was this year?",
-    topPurchases: "Top Purchases", topPurchasesSub: "Where did the money go?", modeExpenditure: "Expense Only",
-    modeBalance: "Full Balance", photoGallery: "Yearly Highlights", photoGallerySub: "One photo per month",
-    uploadPhoto: "Upload Photo"
+    appTitle: "Life Ledger", backHome: "Back", totalExpense: "Expense",
+    totalBalance: "Balance", exchangeRate: "Rate(1RMB)", supplies: "Supplies",
+    inventory: "Pantry", wishlist: "Wishlist", inventoryPlaceholder: "Add...",
+    wishlistPlaceholder: "Item...", qty: "Qty", clickToManage: "Manage",
+    fixedExp: "Fixed", income: "Income", dailyExp: "Daily", monthly: "Month",
+    month: "Mon", weekView: "Week", weekGoal: "Goals", addGoal: "Task...",
+    record: "Add", recordBtn: "Save", itemName: "Item", date: "Date", amount: "Amt",
+    mealPlan: "Meals", fixedMonthly: "Monthly Fixed", fixedType: "Recurring",
+    addFixed: "Add Fixed", expense: "Exp", details: "Details", noDetails: "Empty",
+    yearlyGoalsTitle: "Yearly", myGoals: "Goals", addYearlyGoal: "Add...",
+    yearReview: "Review", reviewPlaceholder: "Notes...",
+    topPurchases: "Top 5", topPurchasesSub: "Spending", modeExpenditure: "Exp Only",
+    modeBalance: "Balance", photoGallery: "Gallery", photoGallerySub: "Monthly pic",
+    uploadPhoto: "Upload", urgentMemo: "Urgent", addUrgent: "Urgent...", switchCurrency: "Switch"
   }
 };
 
-// --- 4. 辅助函数 ---
+// --- 4. 工具函数 ---
 const getMonday = (d) => {
   d = new Date(d);
   const day = d.getDay();
@@ -120,6 +123,14 @@ const formatDateISO = (date) => {
   date = new Date(date.getTime() - (offset*60*1000));
   return date.toISOString().split('T')[0];
 };
+// 26.01.01 格式
+const formatDateTiny = (isoString) => {
+  const d = new Date(isoString);
+  const yy = d.getFullYear().toString().slice(-2);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yy}.${mm}.${dd}`;
+};
 
 const compressImage = (file) => {
   return new Promise((resolve) => {
@@ -131,11 +142,11 @@ const compressImage = (file) => {
       img.onload = () => {
         const canvas = document.createElement('canvas');
         let w = img.width, h = img.height;
-        if(w > 500) { h *= 500/w; w=500; }
+        if(w > 800) { h *= 800/w; w=800; }
         canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.7));
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
       }
     };
   });
@@ -143,10 +154,10 @@ const compressImage = (file) => {
 
 // --- 5. 通用卡片 ---
 const Card = ({ children, className = "", title, icon: Icon, action, onClick }) => (
-  <div onClick={onClick} className={`bg-[#fffbf0] rounded-3xl shadow-[4px_4px_0px_0px_rgba(234,224,200,1)] border-2 border-[#efeadd] p-4 ${className} transition-all duration-300 ${onClick ? 'cursor-pointer active:scale-95' : ''}`}>
+  <div onClick={onClick} className={`bg-[#fffbf0] rounded-2xl shadow-[2px_2px_0px_0px_rgba(234,224,200,1)] border border-[#efeadd] p-4 ${className} transition-all duration-300 ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''}`}>
     {(title || Icon) && (
-      <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-[#efeadd]/50 border-dashed">
-        <div className="flex items-center gap-2 text-[#8c7b6d] font-bold text-base">
+      <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#efeadd]/50 border-dashed">
+        <div className="flex items-center gap-2 text-[#8c7b6d] font-bold text-sm md:text-base">
           {Icon && <Icon size={18} className="text-[#e6b422]" />}
           <h2>{title}</h2>
         </div>
@@ -157,7 +168,20 @@ const Card = ({ children, className = "", title, icon: Icon, action, onClick }) 
   </div>
 );
 
-// --- 6. 主应用 ---
+// --- 6. 图片预览 Modal ---
+const ImageModal = ({ src, onClose }) => {
+  if (!src) return null;
+  return (
+    <div className="fixed inset-0 z-[999] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={onClose}>
+      <div className="relative max-w-full max-h-full">
+        <img src={src} alt="Full view" className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" />
+        <button className="absolute -top-10 right-0 text-white p-2" onClick={onClose}><XIcon size={24}/></button>
+      </div>
+    </div>
+  );
+};
+
+// --- 7. 主应用 ---
 export default function App() {
   const [view, setView] = useState('year'); 
   const [selectedYear, setSelectedYear] = useState(2025);
@@ -166,19 +190,23 @@ export default function App() {
   const [showBalance, setShowBalance] = useState(false);
   const [quote, setQuote] = useState("把钱花在刀刃上。");
   const [lang, setLang] = useState('zh');
+  const [displayCurrency, setDisplayCurrency] = useState('JPY'); 
+  const [recordDate, setRecordDate] = useState(formatDateISO(new Date()));
+  const [previewImage, setPreviewImage] = useState(null); 
 
   const [fixedItems, setFixedItems] = useState([{ id: 1, name: '房租', amount: 76910, currency: 'JPY', type: 'expense' }, { id: 2, name: '话费', amount: 2732, currency: 'JPY', type: 'expense' }]);
   const [allTodos, setAllTodos] = useState({}); 
   const [allMeals, setAllMeals] = useState({});
   const [transactions, setTransactions] = useState([{ id: 1, date: formatDateISO(new Date()), name: '超市采购', amount: 1949, currency: 'JPY' }]);
   const [inventory, setInventory] = useState([{ id: 1, name: '辛拉面', quantity: '3包' }]);
-  const [wishlist, setWishlist] = useState([{ id: 1, name: 'Switch', price: 6500, note: '' }]);
+  const [wishlist, setWishlist] = useState([{ id: 1, name: 'Switch', price: '6500', note: '蹲打折' }]);
   const [yearlyGoals, setYearlyGoals] = useState([{id: 1, text: '坚持记账', completed: false}]);
   const [yearlyReview, setYearlyReview] = useState("");
   const [monthlyPhotos, setMonthlyPhotos] = useState({});
+  const [urgentTodos, setUrgentTodos] = useState([{ id: 1, text: '交学费', completed: false }]);
 
   const t = TRANSLATIONS[lang]; 
-  const STORAGE_KEY = 'warmLifeApp_v33_iphone16pro'; 
+  const STORAGE_KEY = 'warmLifeApp_v44_final_layout'; 
 
   // 初始化
   useEffect(() => {
@@ -198,19 +226,22 @@ export default function App() {
         if(parsed.yearlyGoals) setYearlyGoals(parsed.yearlyGoals);
         if(parsed.yearlyReview) setYearlyReview(parsed.yearlyReview);
         if(parsed.monthlyPhotos) setMonthlyPhotos(parsed.monthlyPhotos);
+        if(parsed.urgentTodos) setUrgentTodos(parsed.urgentTodos);
       }
       setQuote(DAILY_QUOTES[Math.floor(Math.random() * DAILY_QUOTES.length)]);
     } catch (e) { console.error("Load error", e); }
   }, []);
 
-  // 持久化
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ fixedItems, allTodos, allMeals, transactions, exchangeRate, inventory, wishlist, showBalance, lang, yearlyGoals, yearlyReview, monthlyPhotos }));
-  }, [fixedItems, allTodos, allMeals, transactions, exchangeRate, inventory, wishlist, showBalance, lang, yearlyGoals, yearlyReview, monthlyPhotos]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ fixedItems, allTodos, allMeals, transactions, exchangeRate, inventory, wishlist, showBalance, lang, yearlyGoals, yearlyReview, monthlyPhotos, urgentTodos }));
+  }, [fixedItems, allTodos, allMeals, transactions, exchangeRate, inventory, wishlist, showBalance, lang, yearlyGoals, yearlyReview, monthlyPhotos, urgentTodos]);
 
-  // 计算
   const toJPY = (amount, currency) => { const val = parseFloat(amount); return isNaN(val) ? 0 : (currency === 'RMB' ? val * exchangeRate : val); };
-  
+  const formatMoney = (amountInJPY) => {
+    if (displayCurrency === 'JPY') return `¥${Math.round(amountInJPY).toLocaleString()}`;
+    return `¥${Math.round(amountInJPY / exchangeRate).toLocaleString()} RMB`;
+  };
+
   const currentWeekStart = getMonday(currentDate);
   const currentWeekEnd = new Date(currentWeekStart);
   currentWeekEnd.setDate(currentWeekEnd.getDate() + 6);
@@ -249,7 +280,6 @@ export default function App() {
     return [...transactions].filter(t => new Date(t.date).getFullYear() === selectedYear).sort((a, b) => toJPY(b.amount, b.currency) - toJPY(a.amount, a.currency)).slice(0, 5);
   }, [transactions, selectedYear, exchangeRate]);
 
-  // Handlers
   const changeWeek = (offset) => { const d = new Date(currentDate); d.setDate(d.getDate() + offset * 7); setCurrentDate(d); };
   const handleMonthClick = (idx) => { setCurrentDate(new Date(selectedYear, idx, 1)); setView('week'); };
   const handleAddTodo = (e) => { if(e.key === 'Enter' && e.target.value.trim()) { setAllTodos({...allTodos, [currentWeekId]: [...currentTodos, { id: Date.now(), text: e.target.value, completed: false }]}); e.target.value = ''; } };
@@ -277,26 +307,29 @@ export default function App() {
     link.click();
     document.body.removeChild(link);
   };
+  const addUrgentTodo = (e) => { if(e.key==='Enter' && e.target.value.trim()){ setUrgentTodos([...urgentTodos, {id: Date.now(), text: e.target.value, completed: false}]); e.target.value=''; }};
+  const toggleUrgent = (id) => setUrgentTodos(urgentTodos.map(t=>t.id===id?{...t,completed:!t.completed}:t));
+  const deleteUrgent = (id) => setUrgentTodos(urgentTodos.filter(t=>t.id!==id));
 
-  // --- Wrapper for iPhone 16 Pro Style ---
   const AppWrapper = ({ children }) => (
-    <div className="flex justify-center min-h-screen bg-gray-100">
+    <div className="flex justify-center min-h-screen bg-gray-100 font-sans">
       <div className="w-full max-w-[393px] bg-[#fdfcf8] min-h-screen shadow-2xl relative overflow-x-hidden">
         {children}
+        <ImageModal src={previewImage} onClose={() => setPreviewImage(null)} />
       </div>
     </div>
   );
 
   // --- Views ---
 
-  // 1. Supplies
+  // 1. Supplies (生活补给)
   if (view === 'supplies') return (
     <AppWrapper>
        <div className="bg-[#f2e6ce] sticky top-0 z-50 shadow-sm border-b border-[#e6dcc0] py-3 px-4">
          <button onClick={() => setView('year')} className="flex items-center gap-2 text-[#8c7b6d] font-bold text-sm hover:text-[#5c524b]"><HomeIcon size={16}/> {t.backHome}</button>
        </div>
-       <div className="px-4 mt-8 space-y-6 pb-20">
-          <div className="mb-6"><h1 className="text-2xl font-black text-[#6d5e50] flex items-center gap-3"><span className="text-[#e6b422]"><ShoppingBagIcon size={24}/></span> {t.supplies}</h1><p className="text-[#8c7b6d] mt-2 text-xs">{t.clickToManage}</p></div>
+       <div className="px-4 mt-6 space-y-6 pb-20">
+          <div className="mb-4"><h1 className="text-2xl font-black text-[#6d5e50] flex items-center gap-3"><span className="text-[#e6b422]"><ShoppingBagIcon size={24}/></span> {t.supplies}</h1></div>
           <div className="flex flex-col gap-6">
              <Card title={t.inventory} icon={RefrigeratorIcon} className="bg-white">
                 <div className="space-y-3">
@@ -314,13 +347,13 @@ export default function App() {
                 <div className="space-y-3">
                    {wishlist.map(item => (
                      <div key={item.id} className="flex justify-between items-center p-3 bg-[#fdfcf8] rounded-xl border border-[#f7f3e8] group">
-                        <div className="flex flex-col"><span className="text-sm font-medium">{item.name}</span>{item.price && <span className="text-xs text-[#e6b422] font-mono font-bold mt-0.5">¥{item.price}</span>}</div>
+                        <div className="flex flex-col"><span className="text-sm font-medium">{item.name}</span><span className="text-xs text-[#e6b422] font-mono font-bold mt-0.5">{item.price}</span></div>
                         <button onClick={() => deleteWishlist(item.id)} className="text-[#dccab0] hover:text-[#e07a5f]"><Trash2Icon size={16}/></button>
                      </div>
                    ))}
                    <form onSubmit={addWishlist} className="flex gap-2 mt-2">
                       <input name="name" placeholder={t.wishlistPlaceholder} required className="flex-1 p-2 bg-[#fdfcf8] border-2 border-dashed border-[#dccab0] rounded-xl text-sm outline-none focus:border-[#e6b422] focus:bg-white" />
-                      <input name="price" type="number" placeholder="¥" className="w-16 p-2 bg-[#fdfcf8] border-2 border-dashed border-[#dccab0] rounded-xl text-sm outline-none focus:border-[#e6b422] focus:bg-white" />
+                      <input name="price" type="text" placeholder="¥..." className="w-20 p-2 bg-[#fdfcf8] border-2 border-dashed border-[#dccab0] rounded-xl text-sm outline-none focus:border-[#e6b422] focus:bg-white" />
                       <button className="bg-[#e6b422] text-white rounded-xl w-10 flex items-center justify-center hover:bg-[#d4a51e] shadow-sm"><PlusIcon size={18}/></button>
                    </form>
                 </div>
@@ -338,15 +371,15 @@ export default function App() {
            <button onClick={() => setView('year')} className="flex items-center gap-2 text-[#8c7b6d] font-bold text-sm hover:text-[#5c524b]"><HomeIcon size={16}/> {t.backHome}</button>
          </div>
        </div>
-       <div className="px-4 mt-8 space-y-6 pb-20">
-          <div className="mb-6"><h1 className="text-2xl font-black text-[#6d5e50] flex items-center gap-3"><span className="text-[#e6b422]"><TargetIcon size={24}/></span> {t.yearlyGoalsTitle}</h1></div>
+       <div className="px-4 mt-6 space-y-6 pb-20">
+          <div className="mb-4"><h1 className="text-2xl font-black text-[#6d5e50] flex items-center gap-3"><span className="text-[#e6b422]"><TargetIcon size={24}/></span> {t.yearlyGoalsTitle}</h1></div>
           <div className="flex flex-col gap-6">
              <Card title={t.myGoals} icon={CheckSquareIcon} className="bg-white">
                 <div className="space-y-3">
                    {yearlyGoals.map(g => (
                      <div key={g.id} className="flex items-start gap-3 p-2 bg-[#fdfcf8] rounded-xl border border-[#f7f3e8]">
                         <input type="checkbox" checked={g.completed} onChange={() => setYearlyGoals(yearlyGoals.map(yg=>yg.id===g.id?{...yg,completed:!yg.completed}:yg))} className="mt-1 accent-[#e6b422]" />
-                        <span className={`flex-1 ${g.completed?'line-through text-[#b09f8d]':''}`}>{g.text}</span>
+                        <span className={`flex-1 text-sm ${g.completed?'line-through text-[#b09f8d]':''}`}>{g.text}</span>
                         <button onClick={()=>setYearlyGoals(yearlyGoals.filter(yg=>yg.id!==g.id))} className="text-[#dccab0] hover:text-[#e07a5f]"><Trash2Icon size={16}/></button>
                      </div>
                    ))}
@@ -357,11 +390,17 @@ export default function App() {
                 <div className="text-xs text-[#b09f8d] mb-4">{t.photoGallerySub}</div>
                 <div className="grid grid-cols-3 gap-2">
                   {Array.from({ length: 12 }).map((_, i) => {
-                    const photo = monthlyPhotos[`${selectedYear}-${i}`];
+                    const photoKey = `${selectedYear}-${i}`;
+                    const photo = monthlyPhotos[photoKey];
                     return (
-                      <div key={i} className="aspect-square bg-[#fdfcf8] rounded-lg border border-[#f7f3e8] relative overflow-hidden flex items-center justify-center group">
+                      <div 
+                        key={i} 
+                        onClick={() => photo && setPreviewImage(photo)}
+                        className={`aspect-square bg-[#fdfcf8] rounded-lg border border-[#f7f3e8] relative overflow-hidden flex items-center justify-center group ${photo ? 'cursor-pointer' : ''}`}
+                      >
+                        {/* 修正：object-cover 确保正方形裁剪，显示完美 */}
                         {photo ? <img src={photo} className="w-full h-full object-cover" /> : <span className="text-xs text-[#dccab0] font-bold">{i+1}</span>}
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
                            <span className="text-white text-xs">{i+1}{t.month}</span>
                         </div>
                       </div>
@@ -369,7 +408,7 @@ export default function App() {
                   })}
                 </div>
              </Card>
-             <div className="space-y-6">
+             <div className="flex flex-col gap-6">
                <Card title={t.yearReview} icon={PenToolIcon} className="bg-white">
                   <textarea value={yearlyReview} onChange={(e)=>setYearlyReview(e.target.value)} placeholder={t.reviewPlaceholder} className="w-full h-32 p-3 bg-[#fdfcf8] border border-[#efeadd] rounded-xl text-sm focus:outline-none focus:border-[#e6b422] resize-none" />
                </Card>
@@ -379,7 +418,7 @@ export default function App() {
                      {topPurchases.map(item => (
                        <div key={item.id} className="flex justify-between items-center text-sm p-2 bg-[#fdfcf8] rounded-lg border border-[#f7f3e8]">
                           <span className="truncate flex-1 pr-2">{item.name}</span>
-                          <span className="font-mono text-[#e07a5f] font-bold">{item.amount} {item.currency}</span>
+                          <span className="font-mono text-[#e07a5f] font-bold">{formatMoney(toJPY(item.amount, item.currency))}</span>
                        </div>
                      ))}
                   </div>
@@ -397,8 +436,8 @@ export default function App() {
         <div className="flex flex-col gap-4">
            <div className="flex justify-between items-start">
              <div>
-               <h1 className="text-2xl font-black text-[#6d5e50] flex items-center gap-2"><span className="text-[#e6b422]"><WalletIcon size={24}/></span> {t.appTitle}</h1>
-               <div className="text-[#8c7b6d] text-xs mt-1 ml-1 opacity-80 max-w-[200px] leading-tight">{quote}</div>
+               <h1 className="text-xl font-black text-[#6d5e50] flex items-center gap-2"><span className="text-[#e6b422]"><WalletIcon size={22}/></span> {t.appTitle}</h1>
+               <div className="text-[#8c7b6d] text-xs mt-1 ml-1 opacity-80 max-w-[180px] leading-tight">{quote}</div>
              </div>
              <div className="flex items-center gap-2">
                <button onClick={toggleLang} className="bg-white/80 p-2 rounded-full text-[#8c7b6d] border border-[#efeadd] hover:text-[#e6b422] font-bold text-xs"><GlobeIcon size={18}/></button>
@@ -416,28 +455,63 @@ export default function App() {
         </div>
       </div>
       
-      <div className="px-4 mt-6 pb-20">
-         <div className="flex flex-col gap-4 mb-6">
-            <div className="bg-[#4a403a] text-[#f2e6ce] p-5 rounded-3xl shadow-lg flex flex-col justify-between min-h-[140px]">
+      <div className="px-4 mt-4 pb-20">
+         
+         {/* 1. 总支出卡片 (Top) */}
+         <div className="flex flex-col gap-4 mb-4">
+            <div className="bg-[#4a403a] text-[#f2e6ce] p-5 rounded-3xl shadow-lg flex flex-col justify-between min-h-[140px] relative overflow-hidden">
                <div>
                  <div className="flex items-center gap-2 text-xs opacity-80 mb-2"><PieChartIcon size={14}/> {showBalance ? t.totalBalance : t.totalExpense}</div>
-                 <div className={`text-3xl font-mono font-bold tracking-tight truncate ${showBalance && annualStats.totalBalance < 0 ? 'text-[#e07a5f]' : 'text-[#e6b422]'}`}>¥{Math.round(showBalance ? annualStats.totalBalance : annualStats.totalExpense).toLocaleString()}</div>
+                 {/* 修正：金额防溢出，增加 break-all */}
+                 <div className={`text-2xl sm:text-3xl font-mono font-bold tracking-tight break-all ${showBalance && annualStats.totalBalance < 0 ? 'text-[#e07a5f]' : 'text-[#e6b422]'}`} style={{maxWidth: '100%'}}>
+                    {formatMoney(showBalance ? annualStats.totalBalance : annualStats.totalExpense)}
+                 </div>
                </div>
-               <div className="mt-4 pt-4 border-t border-white/10 flex flex-col gap-1">
-                 <div className="text-xs opacity-60">{t.exchangeRate}</div>
-                 <div className="flex items-baseline gap-2"><span className="text-sm font-bold">≈</span><input type="number" value={exchangeRate} onChange={(e)=>setExchangeRate(e.target.value)} className="w-16 bg-transparent border-b border-[#e6b422] text-center font-mono font-bold outline-none text-[#e6b422]" /><span className="text-xs opacity-60">JPY</span></div>
+               <div className="mt-4 pt-4 border-t border-white/10 flex flex-col gap-1 relative z-10">
+                 <div className="flex justify-between items-end">
+                   <div className="flex items-baseline gap-2">
+                      <span className="text-xs opacity-60">1 RMB ≈</span>
+                      <input type="number" value={exchangeRate} onChange={(e)=>setExchangeRate(e.target.value)} className="w-12 bg-transparent border-b border-[#e6b422] text-center font-mono font-bold outline-none text-[#e6b422]" />
+                      <span className="text-xs opacity-60">JPY</span>
+                   </div>
+                   <button onClick={() => setDisplayCurrency(displayCurrency === 'JPY' ? 'CNY' : 'JPY')} className="bg-white/20 px-2 py-1 rounded text-xs hover:bg-white/30 transition-colors flex items-center gap-1">
+                      <RefreshIcon size={12}/> {displayCurrency}
+                   </button>
+                 </div>
                </div>
-            </div>
-            <div onClick={() => setView('supplies')} className="bg-white rounded-3xl border-2 border-[#efeadd] shadow-sm p-5 cursor-pointer hover:shadow-md transition-all group">
-               <div className="flex items-center justify-between mb-3"><div className="flex items-center gap-2 text-[#8c7b6d] font-bold text-base"><ShoppingBagIcon size={18}/> {t.supplies}</div><ArrowRightIcon size={16} className="text-[#dccab0] group-hover:text-[#e6b422] transition-colors"/></div>
-               <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm"><span className="text-[#5c524b] flex items-center gap-2"><RefrigeratorIcon size={14} className="text-[#b09f8d]"/> {t.inventory}</span><span className="font-mono font-bold text-[#e6b422] bg-[#fffbf0] px-2 py-0.5 rounded-md">{inventory.length}</span></div>
-                  <div className="flex items-center justify-between text-sm"><span className="text-[#5c524b] flex items-center gap-2"><GiftIcon size={14} className="text-[#b09f8d]"/> {t.wishlist}</span><span className="font-mono font-bold text-[#e6b422] bg-[#fffbf0] px-2 py-0.5 rounded-md">{wishlist.length}</span></div>
-               </div>
-               <div className="text-xs text-[#dccab0] mt-3 text-center border-t border-dashed border-[#efeadd] pt-2">{t.clickToManage}</div>
             </div>
          </div>
 
+         {/* 2. 紧急备忘录 (Middle) */}
+         <div className="mb-4">
+             <div className="bg-[#fff9c4] rounded-xl border border-[#f9e79f] p-3 shadow-sm">
+                <div className="flex items-center gap-2 text-[#d4ac0d] font-bold text-sm mb-2">
+                   <AlertCircleIcon size={16}/> {t.urgentMemo}
+                </div>
+                <div className="space-y-1">
+                   {urgentTodos.map(todo => (
+                     <div key={todo.id} className="flex items-start gap-2 text-sm">
+                        <input type="checkbox" checked={todo.completed} onChange={() => toggleUrgent(todo.id)} className="mt-1 accent-[#f1c40f]" />
+                        <span className={`flex-1 ${todo.completed ? 'line-through opacity-50' : ''}`}>{todo.text}</span>
+                        <button onClick={() => deleteUrgent(todo.id)} className="text-[#f9e79f] hover:text-[#d4ac0d]"><Trash2Icon size={14}/></button>
+                     </div>
+                   ))}
+                   <input onKeyDown={addUrgentTodo} placeholder={t.addUrgent} className="w-full bg-transparent border-b border-dashed border-[#f9e79f] text-sm focus:outline-none placeholder-[#f9e79f] focus:border-[#d4ac0d]" />
+                </div>
+             </div>
+         </div>
+
+         {/* 3. 生活补给入口 (Bottom) */}
+         <div onClick={() => setView('supplies')} className="bg-white rounded-3xl border-2 border-[#efeadd] shadow-sm p-5 cursor-pointer hover:shadow-md transition-all group mb-6">
+            <div className="flex items-center justify-between mb-3"><div className="flex items-center gap-2 text-[#8c7b6d] font-bold text-base"><ShoppingBagIcon size={18}/> {t.supplies}</div><ArrowRightIcon size={16} className="text-[#dccab0] group-hover:text-[#e6b422] transition-colors"/></div>
+            <div className="space-y-3">
+               <div className="flex items-center justify-between text-sm"><span className="text-[#5c524b] flex items-center gap-2"><RefrigeratorIcon size={14} className="text-[#b09f8d]"/> {t.inventory}</span><span className="font-mono font-bold text-[#e6b422] bg-[#fffbf0] px-2 py-0.5 rounded-md">{inventory.length}</span></div>
+               <div className="flex items-center justify-between text-sm"><span className="text-[#5c524b] flex items-center gap-2"><GiftIcon size={14} className="text-[#b09f8d]"/> {t.wishlist}</span><span className="font-mono font-bold text-[#e6b422] bg-[#fffbf0] px-2 py-0.5 rounded-md">{wishlist.length}</span></div>
+            </div>
+            <div className="text-xs text-[#dccab0] mt-3 text-center border-t border-dashed border-[#efeadd] pt-2">{t.clickToManage}</div>
+         </div>
+
+         {/* 4. 月份列表 (Last) */}
          <h3 className="text-[#8c7b6d] font-bold text-lg mb-4 flex items-center gap-2"><CalendarIcon size={18}/> {selectedYear} {t.monthly} <span className="text-xs bg-[#efeadd] text-[#8c7b6d] px-2 py-0.5 rounded-full ml-2">{showBalance ? t.modeBalance : t.modeExpenditure}</span></h3>
          
          <div className="grid grid-cols-2 gap-3">
@@ -447,7 +521,7 @@ export default function App() {
              const photo = monthlyPhotos[`${selectedYear}-${index}`];
              const isDeficit = stats.balance < 0;
              return (
-               <Card key={index} className={`relative overflow-hidden group hover:border-[#e6b422] h-[140px] flex flex-col justify-between ${isFuture ? 'opacity-60 grayscale-[0.3]' : ''}`}>
+               <Card key={index} className={`relative overflow-hidden group hover:border-[#e6b422] h-[160px] flex flex-col justify-between ${isFuture ? 'opacity-60 grayscale-[0.3]' : ''}`}>
                   <div className="flex justify-between items-start z-10">
                      <div className="flex flex-col" onClick={() => handleMonthClick(index)}>
                         <span className={`text-2xl font-black transition-colors ${showBalance ? (isDeficit ? 'text-[#e07a5f]/80' : 'text-[#e6dcc0] group-hover:text-[#7ca982]/30') : 'text-[#e6dcc0] group-hover:text-[#e6b422]/20'}`}>{index + 1}<span className="text-sm ml-0.5 font-bold opacity-60">{t.month}</span></span>
@@ -460,17 +534,17 @@ export default function App() {
                   <div className="space-y-1 mt-1 z-10" onClick={() => handleMonthClick(index)}>
                      {showBalance ? (
                        <>
-                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.income}</span><span className="font-mono">+{stats.fixedIncome.toLocaleString()}</span></div>
-                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.expense}</span><span className="font-mono">-{Math.round(stats.totalExpense).toLocaleString()}</span></div>
+                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.income}</span><span className="font-mono">{formatMoney(stats.fixedIncome)}</span></div>
+                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.expense}</span><span className="font-mono">{formatMoney(stats.totalExpense)}</span></div>
                          <div className="h-px bg-[#efeadd] my-1 border-t border-dashed border-[#dccab0]/50"></div>
-                         <div className="flex justify-between text-xs font-bold text-[#5c524b]"><span className="text-[10px] self-center text-[#8c7b6d]">±</span><span className={`font-mono ${isDeficit ? 'text-[#e07a5f]' : 'text-[#7ca982]'}`}>¥{Math.round(stats.balance).toLocaleString()}</span></div>
+                         <div className="flex justify-between text-xs font-bold text-[#5c524b]"><span className="text-[10px] self-center text-[#8c7b6d]">±</span><span className={`font-mono ${isDeficit ? 'text-[#e07a5f]' : 'text-[#7ca982]'}`}>{formatMoney(stats.balance)}</span></div>
                        </>
                      ) : (
                        <>
-                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.fixedExp}</span><span className="font-mono">{stats.fixedExpense.toLocaleString()}</span></div>
-                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.dailyExp}</span><span className="font-mono">{Math.round(stats.monthlyDaily).toLocaleString()}</span></div>
+                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.fixedExp}</span><span className="font-mono">{formatMoney(stats.fixedExpense)}</span></div>
+                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.dailyExp}</span><span className="font-mono">{formatMoney(stats.monthlyDaily)}</span></div>
                          <div className="h-px bg-[#efeadd] my-1 border-t border-dashed border-[#dccab0]/50"></div>
-                         <div className="flex justify-between text-xs font-bold text-[#5c524b]"><span className="text-[10px] self-center text-[#8c7b6d]">总</span><span className="font-mono text-[#e07a5f]">¥{Math.round(stats.totalExpense).toLocaleString()}</span></div>
+                         <div className="flex justify-between text-xs font-bold text-[#5c524b]"><span className="text-[10px] self-center text-[#8c7b6d]">总</span><span className="font-mono text-[#e07a5f]">{formatMoney(stats.totalExpense)}</span></div>
                        </>
                      )}
                   </div>
@@ -500,14 +574,14 @@ export default function App() {
         <div className="flex flex-col gap-4">
            <div className="bg-white rounded-3xl p-5 border-2 border-[#efeadd] shadow-sm">
               <div className="text-[#8c7b6d] text-sm font-bold mb-1">{t.details}</div>
-              <div className="text-2xl font-black text-[#e6b422] font-mono tracking-tight">¥{Math.round(weekStats.weeklyDaily).toLocaleString()}</div>
-              <div className="text-xs text-[#b09f8d] mt-1 font-mono">≈ {Math.round(weekStats.weeklyDaily / exchangeRate)} RMB</div>
+              <div className="text-2xl font-black text-[#e6b422] font-mono tracking-tight">{formatMoney(weekStats.weeklyDaily)}</div>
+              {displayCurrency === 'JPY' && <div className="text-xs text-[#b09f8d] mt-1 font-mono">≈ {formatMoney(weekStats.weeklyDaily * exchangeRate).replace('¥','').replace('RMB', '')} RMB</div>}
            </div>
            <div className="bg-[#fffbf0] rounded-3xl p-5 border-2 border-[#efeadd] shadow-sm">
               <div className="flex justify-between items-center mb-2"><div className="text-[#8c7b6d] text-sm font-bold">{t.fixedMonthly}</div><div className="text-xs text-[#b09f8d] bg-[#efeadd]/50 px-2 py-1 rounded">{t.fixedType}</div></div>
               <div className="flex gap-8">
-                <div className="flex flex-col"><span className="text-xs text-[#b09f8d] flex items-center gap-1"><TrendingDownIcon size={10}/> {t.fixedExp}</span><span className="text-lg font-bold font-mono text-[#e07a5f]">¥{weekStats.fixedExpense.toLocaleString()}</span></div>
-                {showBalance && weekStats.fixedIncome > 0 && <div className="flex flex-col"><span className="text-xs text-[#b09f8d] flex items-center gap-1"><TrendingUpIcon size={10}/> {t.income}</span><span className="text-lg font-bold font-mono text-[#7ca982]">¥{weekStats.fixedIncome.toLocaleString()}</span></div>}
+                <div className="flex flex-col"><span className="text-xs text-[#b09f8d] flex items-center gap-1"><TrendingDownIcon size={10}/> {t.fixedExp}</span><span className="text-lg font-bold font-mono text-[#e07a5f]">{formatMoney(weekStats.fixedExpense)}</span></div>
+                {showBalance && weekStats.fixedIncome > 0 && <div className="flex flex-col"><span className="text-xs text-[#b09f8d] flex items-center gap-1"><TrendingUpIcon size={10}/> {t.income}</span><span className="text-lg font-bold font-mono text-[#7ca982]">{formatMoney(weekStats.fixedIncome)}</span></div>}
               </div>
            </div>
         </div>
@@ -528,14 +602,30 @@ export default function App() {
           
           <Card title={t.record} icon={ReceiptIcon}>
             <form onSubmit={addTransaction} className="space-y-3">
+              {/* Row 1: Date & Currency */}
               <div className="flex gap-2">
-                <input name="date" type="date" defaultValue={formatDateISO(currentDate)} className="w-[120px] p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm text-[#5c524b] outline-none" />
-                <input name="name" placeholder={t.itemName} required className="flex-1 p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none" />
+                <div className="relative w-1/2">
+                   <input 
+                      type="date" 
+                      name="date"
+                      defaultValue={formatDateISO(currentDate)}
+                      onChange={(e) => setRecordDate(e.target.value)}
+                      className="absolute inset-0 opacity-0 cursor-pointer z-10 w-full"
+                   />
+                   <div className="w-full p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm text-[#e6b422] font-mono font-bold text-center flex items-center justify-between cursor-pointer">
+                     <span>{formatDateTiny(recordDate)}</span>
+                     <CalendarIcon size={14} className="text-[#dccab0]"/>
+                   </div>
+                </div>
+                <select name="currency" className="w-1/2 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none px-2 text-center text-[#5c524b] font-bold"><option value="JPY">JPY</option><option value="RMB">RMB</option></select>
               </div>
+
+              {/* Row 2: Name & Amount */}
               <div className="flex gap-2">
-                <input name="amount" type="number" step="0.01" placeholder="0.00" required className="flex-1 p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none" />
-                <select name="currency" className="w-20 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none"><option value="JPY">JPY</option><option value="RMB">RMB</option></select>
+                <input name="name" placeholder={t.itemName} required className="w-2/3 p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none" />
+                <input name="amount" type="number" step="0.01" placeholder={t.amount} required className="w-1/3 p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none" />
               </div>
+
               <button type="submit" className="w-full py-3 bg-[#e6b422] text-white font-bold rounded-xl shadow-md hover:bg-[#d4a51e] flex justify-center items-center gap-2"><PlusIcon size={18}/> {t.recordBtn}</button>
             </form>
           </Card>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-// --- 1. 基础图标组件 (无需安装，复制即用) ---
+// --- 1. 基础图标组件 ---
 const IconWrapper = ({ children, size = 24, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
 );
@@ -49,8 +49,8 @@ const DAILY_QUOTES = [
 // --- 3. 多语言字典 ---
 const TRANSLATIONS = {
   zh: {
-    appTitle: "生活账本", backHome: "返回", totalExpense: "总支出",
-    totalBalance: "总结余", exchangeRate: "汇率 (1 RMB)", supplies: "生活补给",
+    appTitle: "生活账本", backHome: "返回", totalExpense: "年度支出 (预估)",
+    totalBalance: "年度结余 (预估)", exchangeRate: "汇率 (1 RMB)", supplies: "生活补给",
     inventory: "冰箱", wishlist: "心愿", inventoryPlaceholder: "余粮...",
     wishlistPlaceholder: "想买...", qty: "剩?", clickToManage: "点击管理",
     fixedExp: "固定", income: "收入", dailyExp: "日常", monthly: "月",
@@ -62,11 +62,13 @@ const TRANSLATIONS = {
     yearReview: "小结", reviewPlaceholder: "写点什么...",
     topPurchases: "高光消费 (Top 5)", topPurchasesSub: "钱花哪了", modeExpenditure: "支出模式",
     modeBalance: "收支模式", photoGallery: "年度回忆", photoGallerySub: "每月一张 (点击大图)",
-    uploadPhoto: "上传", urgentMemo: "紧急待办", addUrgent: "加急事...", switchCurrency: "切换显示"
+    uploadPhoto: "上传", urgentMemo: "紧急待办", addUrgent: "加急事...", switchCurrency: "切换显示",
+    actualBreakdown: "实际构成", weeklyTotal: "本周合计 (JPY)", breakdown: "构成",
+    monthRate: "本月汇率 (1RMB=)"
   },
   jp: {
-    appTitle: "生活家計簿", backHome: "戻る", totalExpense: "総支出",
-    totalBalance: "総収支", exchangeRate: "レート(1RMB)", supplies: "生活用品",
+    appTitle: "生活家計簿", backHome: "戻る", totalExpense: "年間支出 (予想)",
+    totalBalance: "年間収支 (予想)", exchangeRate: "レート(1RMB)", supplies: "生活用品",
     inventory: "冷蔵庫", wishlist: "心願", inventoryPlaceholder: "在庫...",
     wishlistPlaceholder: "欲しい...", qty: "残?", clickToManage: "管理する",
     fixedExp: "固定費", income: "収入", dailyExp: "生活費", monthly: "月",
@@ -78,11 +80,13 @@ const TRANSLATIONS = {
     yearReview: "年間レビュー", reviewPlaceholder: "一言...",
     topPurchases: "高額出費", topPurchasesSub: "何買った?", modeExpenditure: "支出のみ",
     modeBalance: "収支管理", photoGallery: "年間写真", photoGallerySub: "毎月の記録",
-    uploadPhoto: "写真", urgentMemo: "緊急メモ", addUrgent: "急用...", switchCurrency: "通貨切替"
+    uploadPhoto: "写真", urgentMemo: "緊急メモ", addUrgent: "急用...", switchCurrency: "通貨切替",
+    actualBreakdown: "実数内訳", weeklyTotal: "今週合計 (JPY)", breakdown: "内訳",
+    monthRate: "今月レート"
   },
   en: {
-    appTitle: "Life Ledger", backHome: "Back", totalExpense: "Expense",
-    totalBalance: "Balance", exchangeRate: "Rate(1RMB)", supplies: "Supplies",
+    appTitle: "Life Ledger", backHome: "Back", totalExpense: "Total Exp (Est.)",
+    totalBalance: "Total Bal (Est.)", exchangeRate: "Rate(1RMB)", supplies: "Supplies",
     inventory: "Pantry", wishlist: "Wishlist", inventoryPlaceholder: "Add...",
     wishlistPlaceholder: "Item...", qty: "Qty", clickToManage: "Manage",
     fixedExp: "Fixed", income: "Income", dailyExp: "Daily", monthly: "Month",
@@ -94,7 +98,9 @@ const TRANSLATIONS = {
     yearReview: "Review", reviewPlaceholder: "Notes...",
     topPurchases: "Top 5", topPurchasesSub: "Spending", modeExpenditure: "Exp Only",
     modeBalance: "Balance", photoGallery: "Gallery", photoGallerySub: "Monthly pic",
-    uploadPhoto: "Upload", urgentMemo: "Urgent", addUrgent: "Urgent...", switchCurrency: "Switch"
+    uploadPhoto: "Upload", urgentMemo: "Urgent", addUrgent: "Urgent...", switchCurrency: "Switch",
+    actualBreakdown: "Actual Breakdown", weeklyTotal: "Weekly Total (JPY)", breakdown: "Breakdown",
+    monthRate: "Month Rate"
   }
 };
 
@@ -125,6 +131,7 @@ const formatDateISO = (date) => {
 };
 // 26.01.01 格式
 const formatDateTiny = (isoString) => {
+  if (!isoString) return "";
   const d = new Date(isoString);
   const yy = d.getFullYear().toString().slice(-2);
   const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -187,6 +194,7 @@ export default function App() {
   const [selectedYear, setSelectedYear] = useState(2025);
   const [currentDate, setCurrentDate] = useState(new Date()); 
   const [exchangeRate, setExchangeRate] = useState(20.5);
+  const [monthlyRates, setMonthlyRates] = useState({}); 
   const [showBalance, setShowBalance] = useState(false);
   const [quote, setQuote] = useState("把钱花在刀刃上。");
   const [lang, setLang] = useState('zh');
@@ -194,7 +202,20 @@ export default function App() {
   const [recordDate, setRecordDate] = useState(formatDateISO(new Date()));
   const [previewImage, setPreviewImage] = useState(null); 
 
-  const [fixedItems, setFixedItems] = useState([{ id: 1, name: '房租', amount: 76910, currency: 'JPY', type: 'expense' }, { id: 2, name: '话费', amount: 2732, currency: 'JPY', type: 'expense' }]);
+  // 固定支出初始化 - 找回全家桶
+  const defaultFixed = [
+    { id: 1, name: '房租', amount: 76910, currency: 'JPY', type: 'expense' },
+    { id: 2, name: '话费', amount: 2732, currency: 'JPY', type: 'expense' },
+    { id: 3, name: '电费', amount: 0, currency: 'JPY', type: 'expense' },
+    { id: 4, name: '煤气费', amount: 0, currency: 'JPY', type: 'expense' },
+    { id: 5, name: '交通费', amount: 0, currency: 'JPY', type: 'expense' },
+    { id: 6, name: '医保', amount: 0, currency: 'JPY', type: 'expense' },
+    { id: 7, name: 'AppleCare+', amount: 1740, currency: 'JPY', type: 'expense' },
+    { id: 8, name: 'iCloud', amount: 450, currency: 'JPY', type: 'expense' },
+    { id: 9, name: '兼职收入', amount: 0, currency: 'JPY', type: 'income' }
+  ];
+
+  const [fixedItems, setFixedItems] = useState(defaultFixed);
   const [allTodos, setAllTodos] = useState({}); 
   const [allMeals, setAllMeals] = useState({});
   const [transactions, setTransactions] = useState([{ id: 1, date: formatDateISO(new Date()), name: '超市采购', amount: 1949, currency: 'JPY' }]);
@@ -204,26 +225,27 @@ export default function App() {
   const [yearlyReview, setYearlyReview] = useState("");
   const [monthlyPhotos, setMonthlyPhotos] = useState({});
   const [urgentTodos, setUrgentTodos] = useState([{ id: 1, text: '交学费', completed: false }]);
+  const [goalsByYear, setGoalsByYear] = useState({ '2025': [{id: 1, text: '坚持记账', completed: false}] });
 
   const t = TRANSLATIONS[lang]; 
-  const STORAGE_KEY = 'warmLifeApp_v44_final_layout'; 
+  const STORAGE_KEY = 'warmLifeApp_v101_perfect_clean'; 
 
-  // 初始化
   useEffect(() => {
     try {
       const savedData = localStorage.getItem(STORAGE_KEY);
       if (savedData) {
         const parsed = JSON.parse(savedData);
-        if(parsed.fixedItems) setFixedItems(parsed.fixedItems);
+        if(parsed.fixedItems && parsed.fixedItems.length > 0) setFixedItems(parsed.fixedItems);
         if(parsed.allTodos) setAllTodos(parsed.allTodos);
         if(parsed.allMeals) setAllMeals(parsed.allMeals);
         if(parsed.transactions) setTransactions(parsed.transactions);
         if(parsed.exchangeRate) setExchangeRate(parsed.exchangeRate);
+        if(parsed.monthlyRates) setMonthlyRates(parsed.monthlyRates);
         if(parsed.inventory) setInventory(parsed.inventory);
         if(parsed.wishlist) setWishlist(parsed.wishlist);
         if(parsed.showBalance !== undefined) setShowBalance(parsed.showBalance);
         if(parsed.lang) setLang(parsed.lang);
-        if(parsed.yearlyGoals) setYearlyGoals(parsed.yearlyGoals);
+        if(parsed.goalsByYear) setGoalsByYear(parsed.goalsByYear);
         if(parsed.yearlyReview) setYearlyReview(parsed.yearlyReview);
         if(parsed.monthlyPhotos) setMonthlyPhotos(parsed.monthlyPhotos);
         if(parsed.urgentTodos) setUrgentTodos(parsed.urgentTodos);
@@ -233,14 +255,28 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ fixedItems, allTodos, allMeals, transactions, exchangeRate, inventory, wishlist, showBalance, lang, yearlyGoals, yearlyReview, monthlyPhotos, urgentTodos }));
-  }, [fixedItems, allTodos, allMeals, transactions, exchangeRate, inventory, wishlist, showBalance, lang, yearlyGoals, yearlyReview, monthlyPhotos, urgentTodos]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ fixedItems, allTodos, allMeals, transactions, exchangeRate, monthlyRates, inventory, wishlist, showBalance, lang, goalsByYear, yearlyReview, monthlyPhotos, urgentTodos }));
+  }, [fixedItems, allTodos, allMeals, transactions, exchangeRate, monthlyRates, inventory, wishlist, showBalance, lang, goalsByYear, yearlyReview, monthlyPhotos, urgentTodos]);
 
-  const toJPY = (amount, currency) => { const val = parseFloat(amount); return isNaN(val) ? 0 : (currency === 'RMB' ? val * exchangeRate : val); };
-  const formatMoney = (amountInJPY) => {
-    if (displayCurrency === 'JPY') return `¥${Math.round(amountInJPY).toLocaleString()}`;
-    return `¥${Math.round(amountInJPY / exchangeRate).toLocaleString()} RMB`;
+  const getRateForMonth = (year, monthIndex) => {
+    const key = `${year}-${monthIndex}`;
+    return monthlyRates[key] !== undefined ? monthlyRates[key] : exchangeRate;
   };
+
+  const toJPY = (amount, currency, rate) => { 
+    const val = parseFloat(amount); 
+    return isNaN(val) ? 0 : (currency === 'RMB' ? val * rate : val); 
+  };
+  
+  // 无焦虑模式显示：强制取绝对值，移除负号
+  const formatMoney = (amountInJPY) => {
+    const safe = Math.abs(isNaN(amountInJPY) ? 0 : amountInJPY);
+    if (displayCurrency === 'JPY') return `¥${Math.round(safe).toLocaleString()}`;
+    return `¥${Math.round(safe / exchangeRate).toLocaleString()} RMB`;
+  };
+  
+  // 简单格式化，同样取绝对值，不带RMB
+  const formatMoneySimple = (val) => `¥${Math.round(Math.abs(isNaN(val)?0:val)).toLocaleString()}`;
 
   const currentWeekStart = getMonday(currentDate);
   const currentWeekEnd = new Date(currentWeekStart);
@@ -248,37 +284,75 @@ export default function App() {
   const currentWeekId = getWeekId(currentWeekStart);
   const currentTodos = allTodos[currentWeekId] || [];
   const currentMeals = allMeals[currentWeekId] || { Mon: {b:'',l:'',d:''}, Tue: {b:'',l:'',d:''}, Wed: {b:'',l:'',d:''}, Thu: {b:'',l:'',d:''}, Fri: {b:'',l:'',d:''}, Sat: {b:'',l:'',d:''}, Sun: {b:'',l:'',d:''} };
-  const currentTransactions = transactions.filter(t => {
+  const currentTransactions = (transactions || []).filter(t => {
     const tDate = new Date(t.date);
     return tDate >= currentWeekStart && tDate <= new Date(currentWeekEnd.getTime() + 86400000 - 1);
   }).sort((a, b) => new Date(b.date) - new Date(a.date));
 
   const weekStats = useMemo(() => {
-    const fixedExpense = fixedItems.filter(i => i.type === 'expense').reduce((sum, i) => sum + toJPY(i.amount, i.currency), 0);
-    const fixedIncome = fixedItems.filter(i => i.type === 'income').reduce((sum, i) => sum + toJPY(i.amount, i.currency), 0);
-    const weeklyDaily = currentTransactions.reduce((sum, i) => sum + toJPY(i.amount, i.currency), 0);
-    return { fixedExpense, fixedIncome, weeklyDaily };
-  }, [fixedItems, currentTransactions, exchangeRate]);
+    let jpyTotal = 0, rmbTotal = 0;
+    currentTransactions.forEach(t => {
+      const amt = parseFloat(t.amount) || 0;
+      if (t.currency === 'JPY') jpyTotal += amt;
+      else rmbTotal += amt;
+    });
+    const thisMonthRate = getRateForMonth(currentDate.getFullYear(), currentDate.getMonth());
+
+    const fixedExpense = fixedItems.filter(i => i.type === 'expense').reduce((sum, i) => sum + toJPY(i.amount, i.currency, thisMonthRate), 0);
+    const fixedIncome = fixedItems.filter(i => i.type === 'income').reduce((sum, i) => sum + toJPY(i.amount, i.currency, thisMonthRate), 0);
+    const weeklyDailyTotalJPY = jpyTotal + (rmbTotal * thisMonthRate);
+    return { fixedExpense, fixedIncome, weeklyDailyTotalJPY, jpyTotal, rmbTotal, thisMonthRate };
+  }, [fixedItems, currentTransactions, monthlyRates, exchangeRate, currentDate]);
 
   const getMonthStats = (year, monthIndex) => {
-    const fixedExpense = fixedItems.filter(i => i.type === 'expense').reduce((sum, i) => sum + toJPY(i.amount, i.currency), 0);
-    const fixedIncome = fixedItems.filter(i => i.type === 'income').reduce((sum, i) => sum + toJPY(i.amount, i.currency), 0);
-    const monthlyDaily = transactions.filter(t => {
+    const rate = getRateForMonth(year, monthIndex);
+    const fixedExpense = fixedItems.filter(i => i.type === 'expense').reduce((sum, i) => sum + toJPY(i.amount, i.currency, rate), 0);
+    const fixedIncome = fixedItems.filter(i => i.type === 'income').reduce((sum, i) => sum + toJPY(i.amount, i.currency, rate), 0);
+    const monthlyDaily = (transactions || []).filter(t => {
       const d = new Date(t.date);
       return d.getFullYear() === year && d.getMonth() === monthIndex;
-    }).reduce((sum, i) => sum + toJPY(i.amount, i.currency), 0);
+    }).reduce((sum, i) => sum + toJPY(i.amount, i.currency, rate), 0);
     return { fixedExpense, fixedIncome, monthlyDaily, totalExpense: fixedExpense + monthlyDaily, balance: fixedIncome - (fixedExpense + monthlyDaily) };
   };
 
   const annualStats = useMemo(() => {
-    let totalExp = 0, totalBal = 0;
-    Array.from({length: 12}).forEach((_, i) => { const s = getMonthStats(selectedYear, i); totalExp += s.totalExpense; totalBal += s.balance; });
-    return { totalExpense: totalExp, totalBalance: totalBal };
-  }, [selectedYear, fixedItems, transactions, exchangeRate]);
+    let expJPY = 0, expRMB = 0;
+    let incJPY = 0, incRMB = 0;
+    let totalExpConverted = 0;
+    let totalIncConverted = 0;
+
+    Array.from({length: 12}).forEach((_, i) => {
+       const stats = getMonthStats(selectedYear, i);
+       totalExpConverted += stats.totalExpense;
+       totalIncConverted += stats.fixedIncome;
+    });
+
+    fixedItems.forEach(item => {
+      const amount = parseFloat(item.amount) || 0;
+      const yearlyAmount = amount * 12;
+      if (item.type === 'expense') {
+        if (item.currency === 'JPY') expJPY += yearlyAmount; else expRMB += yearlyAmount;
+      } else {
+        if (item.currency === 'JPY') incJPY += yearlyAmount; else incRMB += yearlyAmount;
+      }
+    });
+    (transactions || []).filter(t => new Date(t.date).getFullYear() === selectedYear).forEach(t => {
+      const amount = parseFloat(t.amount) || 0;
+      if (t.currency === 'JPY') expJPY += amount; else expRMB += amount;
+    });
+
+    return { expJPY, expRMB, incJPY, incRMB, totalExpConverted, totalBalConverted: totalIncConverted - totalExpConverted };
+  }, [selectedYear, fixedItems, transactions, monthlyRates, exchangeRate]);
 
   const topPurchases = useMemo(() => {
-    return [...transactions].filter(t => new Date(t.date).getFullYear() === selectedYear).sort((a, b) => toJPY(b.amount, b.currency) - toJPY(a.amount, a.currency)).slice(0, 5);
+    return [...(transactions || [])].filter(t => new Date(t.date).getFullYear() === selectedYear).sort((a, b) => toJPY(b.amount, b.currency, exchangeRate) - toJPY(a.amount, a.currency, exchangeRate)).slice(0, 5);
   }, [transactions, selectedYear, exchangeRate]);
+
+  const currentYearGoals = useMemo(() => goalsByYear[selectedYear] || [], [goalsByYear, selectedYear]);
+  const activeYearGoals = currentYearGoals.filter(g => !g.completed);
+  const completedYearGoals = currentYearGoals.filter(g => g.completed);
+  const activeUrgentTodos = urgentTodos.filter(t => !t.completed);
+  const completedUrgentTodos = urgentTodos.filter(t => t.completed);
 
   const changeWeek = (offset) => { const d = new Date(currentDate); d.setDate(d.getDate() + offset * 7); setCurrentDate(d); };
   const handleMonthClick = (idx) => { setCurrentDate(new Date(selectedYear, idx, 1)); setView('week'); };
@@ -286,30 +360,42 @@ export default function App() {
   const toggleTodo = (id) => setAllTodos({...allTodos, [currentWeekId]: currentTodos.map(t=>t.id===id?{...t,completed:!t.completed}:t)});
   const deleteTodo = (id) => setAllTodos({...allTodos, [currentWeekId]: currentTodos.filter(t=>t.id!==id)});
   const updateMeal = (d, type, v) => setAllMeals({...allMeals, [currentWeekId]: {...currentMeals, [d]: {...currentMeals[d], [type]: v}}});
-  const addTransaction = (e) => { e.preventDefault(); const fd = new FormData(e.target); setTransactions([{id: Date.now(), date: fd.get('date'), name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency')}, ...transactions]); e.target.reset(); };
+  
+  const addTransaction = (e) => { 
+    e.preventDefault(); 
+    const fd = new FormData(e.target); 
+    const dateVal = recordDate || formatDateISO(new Date()); 
+    setTransactions([{id: Date.now(), date: dateVal, name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency')}, ...transactions]); 
+    e.target.reset(); 
+    setRecordDate(dateVal);
+  };
+  const deleteTransaction = (id) => setTransactions(transactions.filter(t => t.id !== id));
   const addFixedItem = (e) => { e.preventDefault(); const fd = new FormData(e.target); setFixedItems([...fixedItems, {id: Date.now(), name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency'), type: fd.get('type')}]); e.target.reset(); };
   const addInventory = (e) => { if(e.key==='Enter'){ setInventory([...inventory, {id: Date.now(), name: e.target.value, quantity: ''}]); e.target.value=''; } };
   const updateInventoryQty = (id, val) => setInventory(inventory.map(i => i.id === id ? { ...i, quantity: val } : i));
   const deleteInventory = (id) => setInventory(inventory.filter(i => i.id !== id));
   const addWishlist = (e) => { e.preventDefault(); const fd = new FormData(e.target); setWishlist([...wishlist, {id: Date.now(), name: fd.get('name'), price: fd.get('price'), note: ''}]); e.target.reset(); };
   const deleteWishlist = (id) => setWishlist(wishlist.filter(w => w.id !== id));
-  const addYGoal = (e) => { if(e.key==='Enter'){ setYearlyGoals([...yearlyGoals, {id: Date.now(), text: e.target.value, completed: false}]); e.target.value=''; } };
-  const handlePhotoUpload = async (e, monthIndex) => { const file = e.target.files[0]; if(file) { try { const url = await compressImage(file); setMonthlyPhotos(prev => ({...prev, [`${selectedYear}-${monthIndex}`]: url})); } catch(err) { alert("Error uploading photo"); } } };
-  const toggleLang = () => { if (lang === 'zh') setLang('jp'); else if (lang === 'jp') setLang('en'); else setLang('zh'); };
-  const exportData = () => {
-    const dataStr = localStorage.getItem(STORAGE_KEY);
-    const blob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Backup_${formatDateISO(new Date())}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const addYGoal = (e) => { 
+    if(e.key==='Enter' && e.target.value.trim()){ 
+      const newGoal = {id: Date.now(), text: e.target.value, completed: false};
+      setGoalsByYear(prev => ({ ...prev, [selectedYear]: [...(prev[selectedYear] || []), newGoal] }));
+      e.target.value=''; 
+    } 
   };
+  const toggleYGoal = (id) => { setGoalsByYear(prev => ({ ...prev, [selectedYear]: prev[selectedYear].map(g => g.id === id ? { ...g, completed: !g.completed } : g) })); };
+  const deleteYGoal = (id) => { setGoalsByYear(prev => ({ ...prev, [selectedYear]: prev[selectedYear].filter(g => g.id !== id) })); };
+  const handlePhotoUpload = async (e, monthIndex) => { const file = e.target.files[0]; if(file) { try { const url = await compressImage(file); setMonthlyPhotos(prev => ({...prev, [`${selectedYear}-${monthIndex}`]: url})); } catch(err) { alert("Error"); } } };
+  const toggleLang = () => { if (lang === 'zh') setLang('jp'); else if (lang === 'jp') setLang('en'); else setLang('zh'); };
+  const exportData = () => { const dataStr = localStorage.getItem(STORAGE_KEY); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `Backup_${formatDateISO(new Date())}.json`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
   const addUrgentTodo = (e) => { if(e.key==='Enter' && e.target.value.trim()){ setUrgentTodos([...urgentTodos, {id: Date.now(), text: e.target.value, completed: false}]); e.target.value=''; }};
   const toggleUrgent = (id) => setUrgentTodos(urgentTodos.map(t=>t.id===id?{...t,completed:!t.completed}:t));
   const deleteUrgent = (id) => setUrgentTodos(urgentTodos.filter(t=>t.id!==id));
+  
+  const setRateForMonth = (val) => {
+    const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
+    setMonthlyRates(prev => ({ ...prev, [key]: parseFloat(val) }));
+  };
 
   const AppWrapper = ({ children }) => (
     <div className="flex justify-center min-h-screen bg-gray-100 font-sans">
@@ -376,14 +462,33 @@ export default function App() {
           <div className="flex flex-col gap-6">
              <Card title={t.myGoals} icon={CheckSquareIcon} className="bg-white">
                 <div className="space-y-3">
-                   {yearlyGoals.map(g => (
+                   {activeYearGoals.map(g => (
                      <div key={g.id} className="flex items-start gap-3 p-2 bg-[#fdfcf8] rounded-xl border border-[#f7f3e8]">
-                        <input type="checkbox" checked={g.completed} onChange={() => setYearlyGoals(yearlyGoals.map(yg=>yg.id===g.id?{...yg,completed:!yg.completed}:yg))} className="mt-1 accent-[#e6b422]" />
-                        <span className={`flex-1 text-sm ${g.completed?'line-through text-[#b09f8d]':''}`}>{g.text}</span>
-                        <button onClick={()=>setYearlyGoals(yearlyGoals.filter(yg=>yg.id!==g.id))} className="text-[#dccab0] hover:text-[#e07a5f]"><Trash2Icon size={16}/></button>
+                        <input type="checkbox" checked={g.completed} onChange={() => toggleYGoal(g.id)} className="mt-1 accent-[#e6b422]" />
+                        <span className={`flex-1 text-sm text-[#5c524b]`}>{g.text}</span>
+                        <button onClick={()=>deleteYGoal(g.id)} className="text-[#dccab0] hover:text-[#e07a5f]"><Trash2Icon size={16}/></button>
                      </div>
                    ))}
+                   
                    <div className="relative mt-2"><div className="absolute left-3 top-3 text-[#dccab0]"><PlusIcon size={16}/></div><input onKeyDown={addYGoal} placeholder={t.addYearlyGoal} className="w-full pl-9 pr-4 py-2.5 bg-[#fdfcf8] border-2 border-dashed border-[#dccab0] rounded-xl text-sm focus:outline-none focus:border-[#e6b422]" /></div>
+
+                   {completedYearGoals.length > 0 && (
+                      <details className="mt-4 group">
+                         <summary className="flex items-center gap-2 text-xs text-[#b09f8d] cursor-pointer select-none">
+                            <ChevronRightIcon size={12} className="group-open:rotate-90 transition-transform"/>
+                            {t.completedGoals} ({completedYearGoals.length})
+                         </summary>
+                         <div className="mt-2 space-y-2 pl-4 border-l border-dashed border-[#efeadd]">
+                            {completedYearGoals.map(g => (
+                              <div key={g.id} className="flex items-start gap-2 text-xs text-[#b09f8d]">
+                                 <input type="checkbox" checked={g.completed} onChange={() => toggleYGoal(g.id)} className="mt-0.5 accent-[#e6b422]" />
+                                 <span className="flex-1 line-through">{g.text}</span>
+                                 <button onClick={()=>deleteYGoal(g.id)} className="text-[#dccab0] hover:text-[#e07a5f]"><Trash2Icon size={12}/></button>
+                              </div>
+                            ))}
+                         </div>
+                      </details>
+                   )}
                 </div>
              </Card>
              <Card title={t.photoGallery} icon={CameraIcon} className="bg-white">
@@ -462,13 +567,29 @@ export default function App() {
             <div className="bg-[#4a403a] text-[#f2e6ce] p-5 rounded-3xl shadow-lg flex flex-col justify-between min-h-[140px] relative overflow-hidden">
                <div>
                  <div className="flex items-center gap-2 text-xs opacity-80 mb-2"><PieChartIcon size={14}/> {showBalance ? t.totalBalance : t.totalExpense}</div>
-                 {/* 修正：金额防溢出，增加 break-all */}
-                 <div className={`text-2xl sm:text-3xl font-mono font-bold tracking-tight break-all ${showBalance && annualStats.totalBalance < 0 ? 'text-[#e07a5f]' : 'text-[#e6b422]'}`} style={{maxWidth: '100%'}}>
-                    {formatMoney(showBalance ? annualStats.totalBalance : annualStats.totalExpense)}
+                 {/* 修正：金额防溢出，break-all + 动态字号 */}
+                 <div className={`text-2xl sm:text-3xl font-mono font-bold tracking-tight break-all ${showBalance && annualStats.totalBalConverted < 0 ? 'text-[#e07a5f]' : 'text-[#e6b422]'}`} style={{maxWidth: '100%'}}>
+                    {formatMoney(showBalance ? annualStats.totalBalConverted : annualStats.totalExpConverted)}
                  </div>
                </div>
+               
+               {/* 实际构成 (Actual Breakdown) */}
                <div className="mt-4 pt-4 border-t border-white/10 flex flex-col gap-1 relative z-10">
-                 <div className="flex justify-between items-end">
+                 <div className="text-[10px] opacity-60 mb-1">{t.actualBreakdown}:</div>
+                 <div className="flex flex-col gap-0.5 font-mono text-sm">
+                    <div className="flex justify-between">
+                       <span>JPY</span>
+                       {/* 修正：绝对值显示 */}
+                       <span>¥{Math.abs((showBalance ? annualStats.incJPY - annualStats.expJPY : annualStats.expJPY)).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                       <span>CNY</span>
+                       {/* 修正：绝对值显示 */}
+                       <span>¥{Math.abs((showBalance ? annualStats.incRMB - annualStats.expRMB : annualStats.expRMB)).toLocaleString()}</span>
+                    </div>
+                 </div>
+                 
+                 <div className="flex justify-between items-end mt-3">
                    <div className="flex items-baseline gap-2">
                       <span className="text-xs opacity-60">1 RMB ≈</span>
                       <input type="number" value={exchangeRate} onChange={(e)=>setExchangeRate(e.target.value)} className="w-12 bg-transparent border-b border-[#e6b422] text-center font-mono font-bold outline-none text-[#e6b422]" />
@@ -489,14 +610,32 @@ export default function App() {
                    <AlertCircleIcon size={16}/> {t.urgentMemo}
                 </div>
                 <div className="space-y-1">
-                   {urgentTodos.map(todo => (
+                   {activeUrgentTodos.map(todo => (
                      <div key={todo.id} className="flex items-start gap-2 text-sm">
                         <input type="checkbox" checked={todo.completed} onChange={() => toggleUrgent(todo.id)} className="mt-1 accent-[#f1c40f]" />
                         <span className={`flex-1 ${todo.completed ? 'line-through opacity-50' : ''}`}>{todo.text}</span>
                         <button onClick={() => deleteUrgent(todo.id)} className="text-[#f9e79f] hover:text-[#d4ac0d]"><Trash2Icon size={14}/></button>
                      </div>
                    ))}
-                   <input onKeyDown={addUrgentTodo} placeholder={t.addUrgent} className="w-full bg-transparent border-b border-dashed border-[#f9e79f] text-sm focus:outline-none placeholder-[#f9e79f] focus:border-[#d4ac0d]" />
+                   <input onKeyDown={addUrgentTodo} placeholder={t.addUrgent} className="w-full bg-transparent border-b border-dashed border-[#f9e79f] text-sm focus:outline-none placeholder-[#f9e79f] focus:border-[#d4ac0d] mt-2" />
+                   
+                   {completedUrgentTodos.length > 0 && (
+                      <details className="mt-2 group">
+                         <summary className="flex items-center gap-1 text-[10px] text-[#d4ac0d]/60 cursor-pointer select-none">
+                            <ChevronRightIcon size={10} className="group-open:rotate-90 transition-transform"/>
+                            {t.completedGoals} ({completedUrgentTodos.length})
+                         </summary>
+                         <div className="mt-1 pl-3 border-l border-[#f9e79f] space-y-1">
+                            {completedUrgentTodos.map(todo => (
+                              <div key={todo.id} className="flex items-start gap-2 text-sm opacity-50">
+                                  <input type="checkbox" checked={todo.completed} onChange={() => toggleUrgent(todo.id)} className="mt-1 accent-[#f1c40f]" />
+                                  <span className="flex-1 line-through">{todo.text}</span>
+                                  <button onClick={() => deleteUrgent(todo.id)} className="text-[#f9e79f] hover:text-[#d4ac0d]"><Trash2Icon size={14}/></button>
+                              </div>
+                            ))}
+                         </div>
+                      </details>
+                   )}
                 </div>
              </div>
          </div>
@@ -534,17 +673,17 @@ export default function App() {
                   <div className="space-y-1 mt-1 z-10" onClick={() => handleMonthClick(index)}>
                      {showBalance ? (
                        <>
-                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.income}</span><span className="font-mono">{formatMoney(stats.fixedIncome)}</span></div>
-                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.expense}</span><span className="font-mono">{formatMoney(stats.totalExpense)}</span></div>
+                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.income}</span><span className="font-mono">{formatMoneySimple(stats.fixedIncome)}</span></div>
+                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.expense}</span><span className="font-mono">{formatMoneySimple(stats.totalExpense)}</span></div>
                          <div className="h-px bg-[#efeadd] my-1 border-t border-dashed border-[#dccab0]/50"></div>
-                         <div className="flex justify-between text-xs font-bold text-[#5c524b]"><span className="text-[10px] self-center text-[#8c7b6d]">±</span><span className={`font-mono ${isDeficit ? 'text-[#e07a5f]' : 'text-[#7ca982]'}`}>{formatMoney(stats.balance)}</span></div>
+                         <div className="flex justify-between text-xs font-bold text-[#5c524b]"><span className="text-[10px] self-center text-[#8c7b6d]">±</span><span className={`font-mono ${isDeficit ? 'text-[#e07a5f]' : 'text-[#7ca982]'}`}>{formatMoneySimple(stats.balance)}</span></div>
                        </>
                      ) : (
                        <>
-                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.fixedExp}</span><span className="font-mono">{formatMoney(stats.fixedExpense)}</span></div>
-                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.dailyExp}</span><span className="font-mono">{formatMoney(stats.monthlyDaily)}</span></div>
+                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.fixedExp}</span><span className="font-mono">{formatMoneySimple(stats.fixedExpense)}</span></div>
+                         <div className="flex justify-between text-[10px] text-[#b09f8d]"><span>{t.dailyExp}</span><span className="font-mono">{formatMoneySimple(stats.monthlyDaily)}</span></div>
                          <div className="h-px bg-[#efeadd] my-1 border-t border-dashed border-[#dccab0]/50"></div>
-                         <div className="flex justify-between text-xs font-bold text-[#5c524b]"><span className="text-[10px] self-center text-[#8c7b6d]">总</span><span className="font-mono text-[#e07a5f]">{formatMoney(stats.totalExpense)}</span></div>
+                         <div className="flex justify-between text-xs font-bold text-[#5c524b]"><span className="text-[10px] self-center text-[#8c7b6d]">总</span><span className="font-mono text-[#e07a5f]">{formatMoneySimple(stats.totalExpense)}</span></div>
                        </>
                      )}
                   </div>
@@ -552,6 +691,7 @@ export default function App() {
              );
            })}
          </div>
+         
       </div>
     </AppWrapper>
   );
@@ -562,6 +702,21 @@ export default function App() {
       <div className="bg-[#f2e6ce] sticky top-0 z-50 shadow-sm border-b border-[#e6dcc0]">
         <div className="max-w-3xl mx-auto px-4 py-3">
           <button onClick={() => setView('year')} className="flex items-center gap-1 text-[#8c7b6d] text-sm font-bold hover:text-[#5c524b] mb-2 transition-colors"><HomeIcon size={16}/> {t.backHome}</button>
+          
+          {/* 月度汇率设置 */}
+          <div className="flex items-center justify-between bg-white/60 p-2 rounded-2xl border border-[#efeadd] mb-2">
+             <div className="flex items-center gap-2 text-xs text-[#8c7b6d] font-bold px-2">
+               {t.monthRate}
+               <input 
+                  type="number" 
+                  value={weekStats.thisMonthRate} 
+                  onChange={(e) => setRateForMonth(e.target.value)}
+                  placeholder={exchangeRate}
+                  className="w-12 bg-transparent border-b border-[#e6b422] text-center text-[#e6b422] focus:outline-none"
+               />
+             </div>
+          </div>
+
           <div className="flex justify-between items-center bg-white/60 p-2 rounded-2xl border border-[#efeadd]">
             <button onClick={() => changeWeek(-1)} className="p-2 hover:bg-[#e4d4b2] rounded-full transition-colors"><ChevronLeftIcon size={20}/></button>
             <div className="text-center"><div className="text-[10px] font-bold text-[#b09f8d] uppercase tracking-wider mb-0.5">{t.weekView}</div><div className="flex items-center gap-2 text-lg font-black text-[#6d5e50]"><span className="text-[#e6b422]"><CalendarIcon size={18}/></span>{formatDateShort(currentWeekStart)} - {formatDateShort(currentWeekEnd)}</div></div>
@@ -570,18 +725,23 @@ export default function App() {
         </div>
       </div>
 
-      <div className="px-4 mt-6 space-y-6 pb-20">
+      <div className="px-4 mt-4 space-y-6 pb-20">
         <div className="flex flex-col gap-4">
            <div className="bg-white rounded-3xl p-5 border-2 border-[#efeadd] shadow-sm">
-              <div className="text-[#8c7b6d] text-sm font-bold mb-1">{t.details}</div>
-              <div className="text-2xl font-black text-[#e6b422] font-mono tracking-tight">{formatMoney(weekStats.weeklyDaily)}</div>
-              {displayCurrency === 'JPY' && <div className="text-xs text-[#b09f8d] mt-1 font-mono">≈ {formatMoney(weekStats.weeklyDaily * exchangeRate).replace('¥','').replace('RMB', '')} RMB</div>}
+              <div className="text-[#8c7b6d] text-sm font-bold mb-1">{t.weeklyTotal}</div>
+              <div className="text-2xl font-black text-[#e6b422] font-mono tracking-tight">{formatMoneySimple(weekStats.weeklyDailyTotalJPY)}</div>
+              {/* 明细卡片：始终显示两种币种的原始数值 */}
+              <div className="mt-2 pt-2 border-t border-dashed border-[#efeadd] flex flex-col gap-0.5 text-xs text-[#b09f8d] font-mono">
+                 <div className="flex justify-between"><span>JPY:</span><span>¥{weekStats.jpyTotal.toLocaleString()}</span></div>
+                 <div className="flex justify-between"><span>CNY:</span><span>¥{weekStats.rmbTotal.toLocaleString()} (≈ ¥{Math.round(weekStats.rmbTotal * weekStats.thisMonthRate)})</span></div>
+              </div>
            </div>
+           
            <div className="bg-[#fffbf0] rounded-3xl p-5 border-2 border-[#efeadd] shadow-sm">
               <div className="flex justify-between items-center mb-2"><div className="text-[#8c7b6d] text-sm font-bold">{t.fixedMonthly}</div><div className="text-xs text-[#b09f8d] bg-[#efeadd]/50 px-2 py-1 rounded">{t.fixedType}</div></div>
               <div className="flex gap-8">
-                <div className="flex flex-col"><span className="text-xs text-[#b09f8d] flex items-center gap-1"><TrendingDownIcon size={10}/> {t.fixedExp}</span><span className="text-lg font-bold font-mono text-[#e07a5f]">{formatMoney(weekStats.fixedExpense)}</span></div>
-                {showBalance && weekStats.fixedIncome > 0 && <div className="flex flex-col"><span className="text-xs text-[#b09f8d] flex items-center gap-1"><TrendingUpIcon size={10}/> {t.income}</span><span className="text-lg font-bold font-mono text-[#7ca982]">{formatMoney(weekStats.fixedIncome)}</span></div>}
+                <div className="flex flex-col"><span className="text-xs text-[#b09f8d] flex items-center gap-1"><TrendingDownIcon size={10}/> {t.fixedExp}</span><span className="text-lg font-bold font-mono text-[#e07a5f]">{formatMoneySimple(weekStats.fixedExpense)}</span></div>
+                {showBalance && weekStats.fixedIncome > 0 && <div className="flex flex-col"><span className="text-xs text-[#b09f8d] flex items-center gap-1"><TrendingUpIcon size={10}/> {t.income}</span><span className="text-lg font-bold font-mono text-[#7ca982]">{formatMoneySimple(weekStats.fixedIncome)}</span></div>}
               </div>
            </div>
         </div>
@@ -612,21 +772,21 @@ export default function App() {
                       onChange={(e) => setRecordDate(e.target.value)}
                       className="absolute inset-0 opacity-0 cursor-pointer z-10 w-full"
                    />
-                   <div className="w-full p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm text-[#e6b422] font-mono font-bold text-center flex items-center justify-between cursor-pointer">
+                   <div className="w-full p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm text-[#e6b422] font-mono font-bold text-center flex items-center justify-between cursor-pointer h-[46px]">
                      <span>{formatDateTiny(recordDate)}</span>
                      <CalendarIcon size={14} className="text-[#dccab0]"/>
                    </div>
                 </div>
-                <select name="currency" className="w-1/2 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none px-2 text-center text-[#5c524b] font-bold"><option value="JPY">JPY</option><option value="RMB">RMB</option></select>
+                <select name="currency" className="w-1/2 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none px-2 text-center text-[#5c524b] font-bold h-[46px]"><option value="JPY">JPY</option><option value="RMB">RMB</option></select>
               </div>
 
               {/* Row 2: Name & Amount */}
               <div className="flex gap-2">
-                <input name="name" placeholder={t.itemName} required className="w-2/3 p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none" />
-                <input name="amount" type="number" step="0.01" placeholder={t.amount} required className="w-1/3 p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none" />
+                <input name="name" placeholder={t.itemName} required className="w-[60%] p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none h-[46px]" />
+                <input name="amount" type="number" step="0.01" placeholder={t.amount} required className="w-[40%] p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none h-[46px]" />
               </div>
 
-              <button type="submit" className="w-full py-3 bg-[#e6b422] text-white font-bold rounded-xl shadow-md hover:bg-[#d4a51e] flex justify-center items-center gap-2"><PlusIcon size={18}/> {t.recordBtn}</button>
+              <button type="submit" className="w-full py-3 bg-[#e6b422] text-white font-bold rounded-xl shadow-md hover:bg-[#d4a51e] flex justify-center items-center gap-2 h-[46px]"><PlusIcon size={18}/> {t.recordBtn}</button>
             </form>
           </Card>
           
@@ -635,8 +795,16 @@ export default function App() {
             <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar">
               {currentTransactions.map(tr => (
                 <div key={tr.id} className="flex justify-between items-center p-3 rounded-xl bg-[#fdfcf8] border border-[#f7f3e8]">
-                  <div className="flex flex-col"><span className="text-sm font-bold text-[#5c524b]">{tr.name}</span><span className="text-[10px] text-[#b09f8d]">{tr.date.slice(5).replace('-','.')}</span></div>
-                  <div className="text-right"><div className="font-mono font-bold text-[#6d5e50] text-base">{tr.amount} <span className="text-[10px]">{tr.currency}</span></div>{tr.currency === 'RMB' && <div className="text-[10px] text-[#b09f8d]">≈ {Math.round(tr.amount * exchangeRate)} JPY</div>}</div>
+                  <div className="flex flex-col"><span className="text-sm font-bold text-[#5c524b]">{tr.name}</span><span className="text-[10px] text-[#b09f8d]">{formatDateTiny(tr.date)}</span></div>
+                  <div className="flex items-center gap-2">
+                     <div className="text-right">
+                        <div className="font-mono font-bold text-[#6d5e50] text-base">
+                          {tr.currency === 'JPY' ? `¥${tr.amount}` : `¥${tr.amount} (RMB)`}
+                        </div>
+                        {tr.currency === 'RMB' && <div className="text-[10px] text-[#b09f8d]">≈ ¥{Math.round(tr.amount * exchangeRate)}</div>}
+                     </div>
+                     <button onClick={() => deleteTransaction(tr.id)} className="text-[#f9e79f] hover:text-[#e07a5f] p-1"><Trash2Icon size={14}/></button>
+                  </div>
                 </div>
               ))}
               {currentTransactions.length === 0 && <div className="text-center py-8 text-[#dccab0] text-sm">{t.noDetails}</div>}
@@ -665,7 +833,19 @@ export default function App() {
         <Card title={t.addFixed} icon={WalletIcon}>
           <div className="space-y-2 mb-4">
             {fixedItems.map(item => (
-              <div key={item.id} className="flex justify-between items-center text-sm p-2 bg-white rounded-lg border border-[#f7f3e8]"><span className="text-[#5c524b]">{item.name}</span><div className="flex items-center gap-2"><div className="text-right"><span className={`block font-mono font-bold ${item.type === 'income' ? 'text-[#7ca982]' : 'text-[#e07a5f]'}`}>{item.type === 'income' ? '+' : '-'} {item.amount} <span className="text-[10px] text-[#b09f8d]">{item.currency}</span></span>{item.currency === 'RMB' && <span className="block text-[10px] text-[#b09f8d] text-right">≈ {Math.round(item.amount * exchangeRate)} JPY</span>}</div><button onClick={() => setFixedItems(fixedItems.filter(i => i.id !== item.id))} className="text-[#dccab0] hover:text-[#e07a5f]"><Trash2Icon size={12}/></button></div></div>
+              <div key={item.id} className="flex justify-between items-center text-sm p-2 bg-white rounded-lg border border-[#f7f3e8]">
+                <span className="text-[#5c524b]">{item.name}</span>
+                <div className="flex items-center gap-2">
+                   {/* 修正：移除 +/- 符号，仅通过颜色区分 */}
+                   <div className="text-right">
+                     <span className={`block font-mono font-bold ${item.type === 'income' ? 'text-[#7ca982]' : 'text-[#e07a5f]'}`}>
+                        {item.amount} <span className="text-[10px] text-[#b09f8d]">{item.currency}</span>
+                     </span>
+                     {item.currency === 'RMB' && <span className="block text-[10px] text-[#b09f8d] text-right">≈ {Math.round(item.amount * weekStats.thisMonthRate)} JPY</span>}
+                   </div>
+                   <button onClick={() => setFixedItems(fixedItems.filter(i => i.id !== item.id))} className="text-[#dccab0] hover:text-[#e07a5f]"><Trash2Icon size={12}/></button>
+                </div>
+              </div>
             ))}
           </div>
           <form onSubmit={addFixedItem} className="grid grid-cols-4 gap-2">

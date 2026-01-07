@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-// --- 1. 基础图标组件 (无需安装，复制即用) ---
+// --- 1. 基础图标组件 ---
 const IconWrapper = ({ children, size = 24, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
 );
@@ -38,6 +38,7 @@ const ImageIcon = (p) => <IconWrapper {...p}><rect x="3" y="3" width="18" height
 const AlertCircleIcon = (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></IconWrapper>;
 const RefreshIcon = (p) => <IconWrapper {...p}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></IconWrapper>;
 const XIcon = (p) => <IconWrapper {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></IconWrapper>;
+const ArchiveRestoreIcon = (p) => <IconWrapper {...p}><rect width="20" height="20" x="2" y="2" rx="2"/><path d="M12 12v6"/><path d="m15 15-3 3-3-3"/><path d="M4 8h16"/><path d="M4 16h6"/></IconWrapper>;
 
 // --- 2. 每日一句 ---
 const DAILY_QUOTES = [
@@ -64,7 +65,8 @@ const TRANSLATIONS = {
     modeBalance: "收支模式", photoGallery: "年度回忆", photoGallerySub: "每月一张 (点击大图)",
     uploadPhoto: "上传", urgentMemo: "紧急待办", addUrgent: "加急事...", switchCurrency: "切换显示",
     actualBreakdown: "实际构成", weeklyTotal: "本周合计 (JPY)", breakdown: "构成",
-    monthRate: "本月汇率 (1RMB=)"
+    monthRate: "本月汇率 (1RMB=)", restoreData: "恢复数据", restoreTitle: "发现旧数据", restoreDesc: "点击下方按钮恢复:",
+    cancel: "取消", restoreSuccess: "恢复成功！"
   },
   jp: {
     appTitle: "生活家計簿", backHome: "戻る", totalExpense: "年間支出 (予想)",
@@ -82,7 +84,8 @@ const TRANSLATIONS = {
     modeBalance: "収支管理", photoGallery: "年間写真", photoGallerySub: "毎月の記録",
     uploadPhoto: "写真", urgentMemo: "緊急メモ", addUrgent: "急用...", switchCurrency: "通貨切替",
     actualBreakdown: "実数内訳", weeklyTotal: "今週合計 (JPY)", breakdown: "内訳",
-    monthRate: "今月レート"
+    monthRate: "今月レート", restoreData: "復元", restoreTitle: "旧データ発見", restoreDesc: "復元する:",
+    cancel: "キャンセル", restoreSuccess: "復元完了！"
   },
   en: {
     appTitle: "Life Ledger", backHome: "Back", totalExpense: "Total Exp (Est.)",
@@ -100,7 +103,8 @@ const TRANSLATIONS = {
     modeBalance: "Balance", photoGallery: "Gallery", photoGallerySub: "Monthly pic",
     uploadPhoto: "Upload", urgentMemo: "Urgent", addUrgent: "Urgent...", switchCurrency: "Switch",
     actualBreakdown: "Actual Breakdown", weeklyTotal: "Weekly Total (JPY)", breakdown: "Breakdown",
-    monthRate: "Month Rate"
+    monthRate: "Month Rate", restoreData: "Restore", restoreTitle: "Found Data", restoreDesc: "Click to restore:",
+    cancel: "Cancel", restoreSuccess: "Restored!"
   }
 };
 
@@ -131,7 +135,7 @@ const formatDateISO = (date) => {
 };
 // 26.01.01 格式
 const formatDateTiny = (isoString) => {
-  if (!isoString) return "";
+  if (!isoString) return "--.--";
   const d = new Date(isoString);
   const yy = d.getFullYear().toString().slice(-2);
   const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -188,7 +192,32 @@ const ImageModal = ({ src, onClose }) => {
   );
 };
 
-// --- 7. 主应用 ---
+// --- 7. 数据恢复 Modal ---
+const RestoreModal = ({ isOpen, onClose, onRestore, keys }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[999] bg-black/50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+        <h3 className="text-lg font-bold text-[#6d5e50] mb-2 flex items-center gap-2"><ArchiveRestoreIcon className="text-[#e6b422]"/> 恢复旧数据</h3>
+        <p className="text-xs text-[#8c7b6d] mb-4">检测到您手机里有这些版本的备份：</p>
+        <div className="space-y-2 max-h-[300px] overflow-y-auto">
+          {keys.map(key => (
+            <button 
+              key={key} 
+              onClick={() => onRestore(key)}
+              className="w-full p-3 bg-[#fdfcf8] border border-[#efeadd] rounded-xl text-left text-sm text-[#5c524b] hover:border-[#e6b422] active:bg-[#fffbf0] transition-colors"
+            >
+              {key.replace('warmLifeApp_', '')}
+            </button>
+          ))}
+        </div>
+        <button onClick={onClose} className="mt-4 w-full py-2 bg-gray-100 text-gray-500 rounded-xl text-sm font-bold">取消</button>
+      </div>
+    </div>
+  );
+};
+
+// --- 8. 主应用 ---
 export default function App() {
   const [view, setView] = useState('year'); 
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -201,8 +230,10 @@ export default function App() {
   const [displayCurrency, setDisplayCurrency] = useState('JPY'); 
   const [recordDate, setRecordDate] = useState(formatDateISO(new Date()));
   const [previewImage, setPreviewImage] = useState(null); 
+  const [restoreModalOpen, setRestoreModalOpen] = useState(false);
+  const [foundLegacyKeys, setFoundLegacyKeys] = useState([]);
 
-  // 固定支出初始化
+  // 固定支出初始化 - 找回全家桶
   const defaultFixed = [
     { id: 1, name: '房租', amount: 76910, currency: 'JPY', type: 'expense' },
     { id: 2, name: '话费', amount: 2732, currency: 'JPY', type: 'expense' },
@@ -228,9 +259,10 @@ export default function App() {
   const [goalsByYear, setGoalsByYear] = useState({ [new Date().getFullYear()]: [{id: 1, text: '坚持记账', completed: false}] });
 
   const t = TRANSLATIONS[lang]; 
-  // 永久Key：warmLifeApp_MAIN。 
-  // 这里我们用一个救援Key列表来尝试恢复数据
-  const STORAGE_KEY = 'warmLifeApp_MAIN';
+  
+  // 永久Key
+  const STORAGE_KEY = 'warmLifeApp_MASTER_DB';
+  // 历史版本 Key 列表 (用于搜救)
   const LEGACY_KEYS = [
     'warmLifeApp_v110_auto_year_final', 'warmLifeApp_v105_jump_fix', 
     'warmLifeApp_v101_perfect_clean', 'warmLifeApp_v100_no_anxiety_final',
@@ -241,8 +273,7 @@ export default function App() {
     'warmLifeApp_v47_date_delete_final', 'warmLifeApp_v46_final_fix_v2',
     'warmLifeApp_v44_final_layout', 'warmLifeApp_v43_final_layout',
     'warmLifeApp_v42_layout_final', 'warmLifeApp_v41_layout_fix',
-    'warmLifeApp_v40_feedback_fix', 'warmLifeApp_v33_iphone16pro',
-    'warmLifeApp_v31_restored', 'warmLifeApp_v30_unbreakable'
+    'warmLifeApp_v40_feedback_fix', 'warmLifeApp_v33_iphone16pro'
   ];
 
   // 初始化 + 数据救援
@@ -251,21 +282,19 @@ export default function App() {
       // 1. 尝试从主Key加载
       let savedData = localStorage.getItem(STORAGE_KEY);
       
-      // 2. 如果主Key没数据，尝试从历史Key搜救
-      if (!savedData) {
-        for (const key of LEGACY_KEYS) {
-           const legacyData = localStorage.getItem(key);
-           if (legacyData) {
-             savedData = legacyData;
-             console.log("Restored data from legacy key:", key);
-             break; // 找到一个就停止
-           }
-        }
+      // 2. 扫描所有历史 Key，准备给用户选择
+      const foundKeys = LEGACY_KEYS.filter(k => localStorage.getItem(k));
+      setFoundLegacyKeys(foundKeys);
+
+      // 3. 只有当主库完全没数据，且有历史数据时，才自动尝试恢复最近的一个
+      if (!savedData && foundKeys.length > 0) {
+         savedData = localStorage.getItem(foundKeys[0]); // 取第一个（通常是最新的）
+         console.log("Auto-restored from:", foundKeys[0]);
       }
 
       if (savedData) {
         const parsed = JSON.parse(savedData);
-        if(parsed.fixedItems) setFixedItems(parsed.fixedItems);
+        if(parsed.fixedItems && parsed.fixedItems.length > 0) setFixedItems(parsed.fixedItems);
         if(parsed.allTodos) setAllTodos(parsed.allTodos);
         if(parsed.allMeals) setAllMeals(parsed.allMeals);
         if(parsed.transactions) setTransactions(parsed.transactions);
@@ -276,7 +305,7 @@ export default function App() {
         if(parsed.showBalance !== undefined) setShowBalance(parsed.showBalance);
         if(parsed.lang) setLang(parsed.lang);
         if(parsed.goalsByYear) setGoalsByYear(parsed.goalsByYear);
-        else if(parsed.yearlyGoals) setGoalsByYear({ [new Date().getFullYear()]: parsed.yearlyGoals }); // 兼容旧版
+        else if(parsed.yearlyGoals) setGoalsByYear({ [new Date().getFullYear()]: parsed.yearlyGoals }); 
 
         if(parsed.yearlyReview) setYearlyReview(parsed.yearlyReview);
         if(parsed.monthlyPhotos) setMonthlyPhotos(parsed.monthlyPhotos);
@@ -286,9 +315,34 @@ export default function App() {
     } catch (e) { console.error("Init error", e); }
   }, []);
 
+  // 持久化
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ fixedItems, allTodos, allMeals, transactions, exchangeRate, monthlyRates, inventory, wishlist, showBalance, lang, goalsByYear, yearlyReview, monthlyPhotos, urgentTodos }));
   }, [fixedItems, allTodos, allMeals, transactions, exchangeRate, monthlyRates, inventory, wishlist, showBalance, lang, goalsByYear, yearlyReview, monthlyPhotos, urgentTodos]);
+
+  // 手动恢复逻辑
+  const handleManualRestore = (key) => {
+    try {
+      const savedData = localStorage.getItem(key);
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        // 恢复数据
+        if(parsed.fixedItems) setFixedItems(parsed.fixedItems);
+        if(parsed.transactions) setTransactions(parsed.transactions);
+        if(parsed.allTodos) setAllTodos(parsed.allTodos);
+        // ... (恢复其他重要数据)
+        if(parsed.inventory) setInventory(parsed.inventory);
+        if(parsed.wishlist) setWishlist(parsed.wishlist);
+        if(parsed.urgentTodos) setUrgentTodos(parsed.urgentTodos);
+        if(parsed.monthlyPhotos) setMonthlyPhotos(parsed.monthlyPhotos);
+        
+        alert("已成功从旧版本恢复数据！");
+        setRestoreModalOpen(false);
+      }
+    } catch (e) {
+      alert("恢复失败，数据可能已损坏");
+    }
+  };
 
   const getRateForMonth = (year, monthIndex) => {
     const key = `${year}-${monthIndex}`;
@@ -445,6 +499,7 @@ export default function App() {
       <div className="w-full max-w-[393px] bg-[#fdfcf8] min-h-screen shadow-2xl relative overflow-x-hidden">
         {children}
         <ImageModal src={previewImage} onClose={() => setPreviewImage(null)} />
+        <RestoreModal isOpen={restoreModalOpen} onClose={() => setRestoreModalOpen(false)} onRestore={handleManualRestore} keys={foundLegacyKeys} />
       </div>
     </div>
   );
@@ -546,7 +601,6 @@ export default function App() {
                         onClick={() => photo && setPreviewImage(photo)}
                         className={`aspect-square bg-[#fdfcf8] rounded-lg border border-[#f7f3e8] relative overflow-hidden flex items-center justify-center group ${photo ? 'cursor-pointer' : ''}`}
                       >
-                        {/* 修正：object-cover 确保正方形裁剪，显示完美 */}
                         {photo ? <img src={photo} className="w-full h-full object-cover" /> : <span className="text-xs text-[#dccab0] font-bold">{i+1}</span>}
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
                            <span className="text-white text-xs">{i+1}{t.month}</span>
@@ -592,6 +646,7 @@ export default function App() {
                <button onClick={() => setView('goals')} className="bg-white/80 p-2 rounded-full text-[#8c7b6d] border border-[#efeadd] hover:text-[#e6b422]"><TargetIcon size={18}/></button>
                <button onClick={() => setShowBalance(!showBalance)} className="bg-white/80 p-2 rounded-full text-[#8c7b6d] border border-[#efeadd] hover:text-[#e6b422]">{showBalance ? <EyeIcon size={18}/> : <EyeOffIcon size={18}/>}</button>
                <button onClick={exportData} className="bg-white/80 p-2 rounded-full text-[#8c7b6d] border border-[#efeadd] hover:text-[#e6b422]"><DownloadIcon size={18}/></button>
+               <button onClick={() => setRestoreModalOpen(true)} className="bg-white/80 p-2 rounded-full text-[#e07a5f] border border-[#efeadd] hover:bg-[#fffbf0]"><ArchiveRestoreIcon size={18}/></button>
              </div>
            </div>
            

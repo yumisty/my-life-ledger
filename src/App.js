@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-// --- 1. 基础图标组件 ---
+// --- 1. 基础图标组件 (无需安装，复制即用) ---
 const IconWrapper = ({ children, size = 24, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
 );
@@ -131,7 +131,7 @@ const formatDateISO = (date) => {
 };
 // 26.01.01 格式
 const formatDateTiny = (isoString) => {
-  if (!isoString) return "--.--";
+  if (!isoString) return "";
   const d = new Date(isoString);
   const yy = d.getFullYear().toString().slice(-2);
   const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -191,7 +191,6 @@ const ImageModal = ({ src, onClose }) => {
 // --- 7. 主应用 ---
 export default function App() {
   const [view, setView] = useState('year'); 
-  // 核心修改：年份初始化为当前时间
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [currentDate, setCurrentDate] = useState(new Date()); 
   const [exchangeRate, setExchangeRate] = useState(20.5);
@@ -226,18 +225,47 @@ export default function App() {
   const [yearlyReview, setYearlyReview] = useState("");
   const [monthlyPhotos, setMonthlyPhotos] = useState({});
   const [urgentTodos, setUrgentTodos] = useState([{ id: 1, text: '交学费', completed: false }]);
-  // 按年份隔离目标 (key 改为当前年份)
   const [goalsByYear, setGoalsByYear] = useState({ [new Date().getFullYear()]: [{id: 1, text: '坚持记账', completed: false}] });
 
   const t = TRANSLATIONS[lang]; 
-  const STORAGE_KEY = 'warmLifeApp_v110_auto_year_final'; 
+  // 永久Key：warmLifeApp_MAIN。 
+  // 这里我们用一个救援Key列表来尝试恢复数据
+  const STORAGE_KEY = 'warmLifeApp_MAIN';
+  const LEGACY_KEYS = [
+    'warmLifeApp_v110_auto_year_final', 'warmLifeApp_v105_jump_fix', 
+    'warmLifeApp_v101_perfect_clean', 'warmLifeApp_v100_no_anxiety_final',
+    'warmLifeApp_v88_full_restore', 'warmLifeApp_v80_no_minus_sign',
+    'warmLifeApp_v75_stable_fix', 'warmLifeApp_v70_rate_fix',
+    'warmLifeApp_v60_button_restore', 'warmLifeApp_v58_perfect_logic',
+    'warmLifeApp_v52_final_perfect_fix', 'warmLifeApp_v50_final_perfect',
+    'warmLifeApp_v47_date_delete_final', 'warmLifeApp_v46_final_fix_v2',
+    'warmLifeApp_v44_final_layout', 'warmLifeApp_v43_final_layout',
+    'warmLifeApp_v42_layout_final', 'warmLifeApp_v41_layout_fix',
+    'warmLifeApp_v40_feedback_fix', 'warmLifeApp_v33_iphone16pro',
+    'warmLifeApp_v31_restored', 'warmLifeApp_v30_unbreakable'
+  ];
 
+  // 初始化 + 数据救援
   useEffect(() => {
     try {
-      const savedData = localStorage.getItem(STORAGE_KEY);
+      // 1. 尝试从主Key加载
+      let savedData = localStorage.getItem(STORAGE_KEY);
+      
+      // 2. 如果主Key没数据，尝试从历史Key搜救
+      if (!savedData) {
+        for (const key of LEGACY_KEYS) {
+           const legacyData = localStorage.getItem(key);
+           if (legacyData) {
+             savedData = legacyData;
+             console.log("Restored data from legacy key:", key);
+             break; // 找到一个就停止
+           }
+        }
+      }
+
       if (savedData) {
         const parsed = JSON.parse(savedData);
-        if(parsed.fixedItems && parsed.fixedItems.length > 0) setFixedItems(parsed.fixedItems);
+        if(parsed.fixedItems) setFixedItems(parsed.fixedItems);
         if(parsed.allTodos) setAllTodos(parsed.allTodos);
         if(parsed.allMeals) setAllMeals(parsed.allMeals);
         if(parsed.transactions) setTransactions(parsed.transactions);
@@ -248,12 +276,14 @@ export default function App() {
         if(parsed.showBalance !== undefined) setShowBalance(parsed.showBalance);
         if(parsed.lang) setLang(parsed.lang);
         if(parsed.goalsByYear) setGoalsByYear(parsed.goalsByYear);
+        else if(parsed.yearlyGoals) setGoalsByYear({ [new Date().getFullYear()]: parsed.yearlyGoals }); // 兼容旧版
+
         if(parsed.yearlyReview) setYearlyReview(parsed.yearlyReview);
         if(parsed.monthlyPhotos) setMonthlyPhotos(parsed.monthlyPhotos);
         if(parsed.urgentTodos) setUrgentTodos(parsed.urgentTodos);
       }
       setQuote(DAILY_QUOTES[Math.floor(Math.random() * DAILY_QUOTES.length)]);
-    } catch (e) { console.error("Load error", e); }
+    } catch (e) { console.error("Init error", e); }
   }, []);
 
   useEffect(() => {
@@ -270,7 +300,7 @@ export default function App() {
     return isNaN(val) ? 0 : (currency === 'RMB' ? val * rate : val); 
   };
   
-  // 无焦虑模式显示
+  // 无焦虑模式显示：强制取绝对值，移除负号
   const formatMoney = (amountInJPY) => {
     const safe = Math.abs(isNaN(amountInJPY) ? 0 : amountInJPY);
     if (displayCurrency === 'JPY') return `¥${Math.round(safe).toLocaleString()}`;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-// --- 1. 基础图标组件 ---
+// --- 1. 基础图标组件 (无需安装，复制即用) ---
+// 保持不变，这些是原生的 SVG，最稳定
 const IconWrapper = ({ children, size = 24, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
 );
@@ -159,7 +160,7 @@ const compressImage = (file) => {
   });
 };
 
-// --- 5. 通用卡片 ---
+// --- 5. 通用卡片 (注意：AppWrapper 移出 App 组件外，这是防跳动的关键) ---
 const Card = ({ children, className = "", title, icon: Icon, action, onClick }) => (
   <div onClick={onClick} className={`bg-[#fffbf0] rounded-2xl shadow-[2px_2px_0px_0px_rgba(234,224,200,1)] border border-[#efeadd] p-4 ${className} transition-all duration-300 ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''}`}>
     {(title || Icon) && (
@@ -188,7 +189,16 @@ const ImageModal = ({ src, onClose }) => {
   );
 };
 
-// --- 7. 主应用 ---
+// --- 7. 外层容器 (移出 App 组件，防止输入时重绘) ---
+const AppWrapper = ({ children }) => (
+  <div className="flex justify-center min-h-screen bg-gray-100 font-sans">
+    <div className="w-full max-w-[393px] bg-[#fdfcf8] min-h-screen shadow-2xl relative overflow-x-hidden">
+      {children}
+    </div>
+  </div>
+);
+
+// --- 8. 主应用逻辑 ---
 export default function App() {
   const [view, setView] = useState('year'); 
   const [selectedYear, setSelectedYear] = useState(2025);
@@ -202,7 +212,7 @@ export default function App() {
   const [recordDate, setRecordDate] = useState(formatDateISO(new Date()));
   const [previewImage, setPreviewImage] = useState(null); 
 
-  // 固定支出初始化 - 找回全家桶
+  // 固定支出初始化
   const defaultFixed = [
     { id: 1, name: '房租', amount: 76910, currency: 'JPY', type: 'expense' },
     { id: 2, name: '话费', amount: 2732, currency: 'JPY', type: 'expense' },
@@ -228,7 +238,7 @@ export default function App() {
   const [goalsByYear, setGoalsByYear] = useState({ '2025': [{id: 1, text: '坚持记账', completed: false}] });
 
   const t = TRANSLATIONS[lang]; 
-  const STORAGE_KEY = 'warmLifeApp_v101_perfect_clean'; 
+  const STORAGE_KEY = 'warmLifeApp_v105_jump_fix'; 
 
   useEffect(() => {
     try {
@@ -268,14 +278,12 @@ export default function App() {
     return isNaN(val) ? 0 : (currency === 'RMB' ? val * rate : val); 
   };
   
-  // 无焦虑模式显示：强制取绝对值，移除负号
   const formatMoney = (amountInJPY) => {
     const safe = Math.abs(isNaN(amountInJPY) ? 0 : amountInJPY);
     if (displayCurrency === 'JPY') return `¥${Math.round(safe).toLocaleString()}`;
     return `¥${Math.round(safe / exchangeRate).toLocaleString()} RMB`;
   };
   
-  // 简单格式化，同样取绝对值，不带RMB
   const formatMoneySimple = (val) => `¥${Math.round(Math.abs(isNaN(val)?0:val)).toLocaleString()}`;
 
   const currentWeekStart = getMonday(currentDate);
@@ -355,7 +363,18 @@ export default function App() {
   const completedUrgentTodos = urgentTodos.filter(t => t.completed);
 
   const changeWeek = (offset) => { const d = new Date(currentDate); d.setDate(d.getDate() + offset * 7); setCurrentDate(d); };
-  const handleMonthClick = (idx) => { setCurrentDate(new Date(selectedYear, idx, 1)); setView('week'); };
+  
+  // 核心修复：点击月份，如果是当前月，跳转到今天；否则跳转到该月1号
+  const handleMonthClick = (idx) => { 
+      const today = new Date();
+      if (today.getFullYear() === selectedYear && today.getMonth() === idx) {
+          setCurrentDate(today);
+      } else {
+          setCurrentDate(new Date(selectedYear, idx, 1));
+      }
+      setView('week'); 
+  };
+  
   const handleAddTodo = (e) => { if(e.key === 'Enter' && e.target.value.trim()) { setAllTodos({...allTodos, [currentWeekId]: [...currentTodos, { id: Date.now(), text: e.target.value, completed: false }]}); e.target.value = ''; } };
   const toggleTodo = (id) => setAllTodos({...allTodos, [currentWeekId]: currentTodos.map(t=>t.id===id?{...t,completed:!t.completed}:t)});
   const deleteTodo = (id) => setAllTodos({...allTodos, [currentWeekId]: currentTodos.filter(t=>t.id!==id)});
@@ -370,7 +389,15 @@ export default function App() {
     setRecordDate(dateVal);
   };
   const deleteTransaction = (id) => setTransactions(transactions.filter(t => t.id !== id));
+  
+  // 核心修复：固定支出项可编辑 (Edit Fixed Item)
+  const updateFixedItemAmount = (id, newVal) => {
+      setFixedItems(fixedItems.map(item => item.id === id ? { ...item, amount: parseFloat(newVal) || 0 } : item));
+  };
+  
   const addFixedItem = (e) => { e.preventDefault(); const fd = new FormData(e.target); setFixedItems([...fixedItems, {id: Date.now(), name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency'), type: fd.get('type')}]); e.target.reset(); };
+  const deleteFixedItem = (id) => setFixedItems(fixedItems.filter(i => i.id !== id));
+  
   const addInventory = (e) => { if(e.key==='Enter'){ setInventory([...inventory, {id: Date.now(), name: e.target.value, quantity: ''}]); e.target.value=''; } };
   const updateInventoryQty = (id, val) => setInventory(inventory.map(i => i.id === id ? { ...i, quantity: val } : i));
   const deleteInventory = (id) => setInventory(inventory.filter(i => i.id !== id));
@@ -396,15 +423,6 @@ export default function App() {
     const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
     setMonthlyRates(prev => ({ ...prev, [key]: parseFloat(val) }));
   };
-
-  const AppWrapper = ({ children }) => (
-    <div className="flex justify-center min-h-screen bg-gray-100 font-sans">
-      <div className="w-full max-w-[393px] bg-[#fdfcf8] min-h-screen shadow-2xl relative overflow-x-hidden">
-        {children}
-        <ImageModal src={previewImage} onClose={() => setPreviewImage(null)} />
-      </div>
-    </div>
-  );
 
   // --- Views ---
 
@@ -446,6 +464,7 @@ export default function App() {
              </Card>
           </div>
        </div>
+       <ImageModal src={previewImage} onClose={() => setPreviewImage(null)} />
     </AppWrapper>
   );
 
@@ -503,7 +522,6 @@ export default function App() {
                         onClick={() => photo && setPreviewImage(photo)}
                         className={`aspect-square bg-[#fdfcf8] rounded-lg border border-[#f7f3e8] relative overflow-hidden flex items-center justify-center group ${photo ? 'cursor-pointer' : ''}`}
                       >
-                        {/* 修正：object-cover 确保正方形裁剪，显示完美 */}
                         {photo ? <img src={photo} className="w-full h-full object-cover" /> : <span className="text-xs text-[#dccab0] font-bold">{i+1}</span>}
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
                            <span className="text-white text-xs">{i+1}{t.month}</span>
@@ -531,6 +549,7 @@ export default function App() {
              </div>
           </div>
        </div>
+       <ImageModal src={previewImage} onClose={() => setPreviewImage(null)} />
     </AppWrapper>
   );
 
@@ -613,7 +632,7 @@ export default function App() {
                    {activeUrgentTodos.map(todo => (
                      <div key={todo.id} className="flex items-start gap-2 text-sm">
                         <input type="checkbox" checked={todo.completed} onChange={() => toggleUrgent(todo.id)} className="mt-1 accent-[#f1c40f]" />
-                        <span className={`flex-1 ${todo.completed ? 'line-through opacity-50' : ''}`}>{todo.text}</span>
+                        <span className="flex-1">{todo.text}</span>
                         <button onClick={() => deleteUrgent(todo.id)} className="text-[#f9e79f] hover:text-[#d4ac0d]"><Trash2Icon size={14}/></button>
                      </div>
                    ))}
@@ -693,6 +712,7 @@ export default function App() {
          </div>
          
       </div>
+       <ImageModal src={previewImage} onClose={() => setPreviewImage(null)} />
     </AppWrapper>
   );
 
@@ -830,24 +850,27 @@ export default function App() {
           </div>
         </Card>
         
+        {/* 固定支出 - 修复：支持直接编辑金额，移除 +/- */}
         <Card title={t.addFixed} icon={WalletIcon}>
           <div className="space-y-2 mb-4">
             {fixedItems.map(item => (
               <div key={item.id} className="flex justify-between items-center text-sm p-2 bg-white rounded-lg border border-[#f7f3e8]">
                 <span className="text-[#5c524b]">{item.name}</span>
                 <div className="flex items-center gap-2">
-                   {/* 修正：移除 +/- 符号，仅通过颜色区分 */}
-                   <div className="text-right">
-                     <span className={`block font-mono font-bold ${item.type === 'income' ? 'text-[#7ca982]' : 'text-[#e07a5f]'}`}>
-                        {item.amount} <span className="text-[10px] text-[#b09f8d]">{item.currency}</span>
-                     </span>
-                     {item.currency === 'RMB' && <span className="block text-[10px] text-[#b09f8d] text-right">≈ {Math.round(item.amount * weekStats.thisMonthRate)} JPY</span>}
-                   </div>
-                   <button onClick={() => setFixedItems(fixedItems.filter(i => i.id !== item.id))} className="text-[#dccab0] hover:text-[#e07a5f]"><Trash2Icon size={12}/></button>
+                   {/* 可编辑金额框 */}
+                   <input 
+                      type="number" 
+                      value={item.amount}
+                      onChange={(e) => updateFixedItemAmount(item.id, e.target.value)}
+                      className="w-16 text-right font-mono font-bold text-[#e07a5f] bg-transparent border-b border-dashed border-[#e6dcc0] focus:border-[#e6b422] outline-none"
+                   />
+                   <span className="text-[10px] text-[#b09f8d]">{item.currency}</span>
+                   <button onClick={() => deleteFixedItem(item.id)} className="text-[#dccab0] hover:text-[#e07a5f]"><Trash2Icon size={12}/></button>
                 </div>
               </div>
             ))}
           </div>
+          {/* 添加新固定项 */}
           <form onSubmit={addFixedItem} className="grid grid-cols-4 gap-2">
              <input name="name" placeholder={t.itemName} required className="col-span-4 p-2 bg-white border border-[#efeadd] rounded-lg text-xs outline-none" />
              <input name="amount" type="number" placeholder="金额" required className="col-span-2 p-2 bg-white border border-[#efeadd] rounded-lg text-xs outline-none" />
@@ -857,6 +880,7 @@ export default function App() {
           </form>
         </Card>
       </div>
+      <ImageModal src={previewImage} onClose={() => setPreviewImage(null)} />
     </AppWrapper>
   );
 }

@@ -1,10 +1,28 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-// --- 1. 基础图标组件 ---
+// ==========================================
+// 1. 基础组件与配置 (全部移出 App 组件外，保证稳定性)
+// ==========================================
+
+// 图标包装器 - 修复：确保 children 能够正确渲染
 const IconWrapper = ({ children, size = 24, className = "" }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    {children}
+  </svg>
 );
 
+// 独立图标组件 - 修复：改为纯函数组件，避免对象引用错误
 const WalletIcon = (p) => <IconWrapper {...p}><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12h.01"/></IconWrapper>;
 const CalendarIcon = (p) => <IconWrapper {...p}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></IconWrapper>;
 const CheckSquareIcon = (p) => <IconWrapper {...p}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></IconWrapper>;
@@ -39,6 +57,7 @@ const AlertCircleIcon = (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="10
 const RefreshIcon = (p) => <IconWrapper {...p}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></IconWrapper>;
 const XIcon = (p) => <IconWrapper {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></IconWrapper>;
 const ArchiveRestoreIcon = (p) => <IconWrapper {...p}><rect width="20" height="20" x="2" y="2" rx="2"/><path d="M12 12v6"/><path d="m15 15-3 3-3-3"/><path d="M4 8h16"/><path d="M4 16h6"/></IconWrapper>;
+const UploadCloudIcon = (p) => <IconWrapper {...p}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></IconWrapper>;
 
 // --- 2. 每日一句 ---
 const DAILY_QUOTES = [
@@ -65,8 +84,8 @@ const TRANSLATIONS = {
     modeBalance: "收支模式", photoGallery: "年度回忆", photoGallerySub: "每月一张 (点击大图)",
     uploadPhoto: "上传", urgentMemo: "紧急待办", addUrgent: "加急事...", switchCurrency: "切换显示",
     actualBreakdown: "实际构成", weeklyTotal: "本周合计 (JPY)", breakdown: "构成",
-    monthRate: "本月汇率 (1RMB=)", restoreData: "恢复数据", restoreTitle: "发现旧数据", restoreDesc: "点击下方按钮恢复:",
-    cancel: "取消", restoreSuccess: "恢复成功！"
+    monthRate: "本月汇率 (1RMB=)", restoreData: "恢复数据", restoreTitle: "数据恢复中心", restoreDesc: "检测到本地有历史备份",
+    cancel: "取消", restoreSuccess: "恢复成功！", importFile: "从文件导入 (.json)", importSuccess: "文件导入成功！"
   },
   jp: {
     appTitle: "生活家計簿", backHome: "戻る", totalExpense: "年間支出 (予想)",
@@ -84,8 +103,8 @@ const TRANSLATIONS = {
     modeBalance: "収支管理", photoGallery: "年間写真", photoGallerySub: "毎月の記録",
     uploadPhoto: "写真", urgentMemo: "緊急メモ", addUrgent: "急用...", switchCurrency: "通貨切替",
     actualBreakdown: "実数内訳", weeklyTotal: "今週合計 (JPY)", breakdown: "内訳",
-    monthRate: "今月レート", restoreData: "復元", restoreTitle: "旧データ発見", restoreDesc: "復元する:",
-    cancel: "キャンセル", restoreSuccess: "復元完了！"
+    monthRate: "今月レート", restoreData: "復元", restoreTitle: "データ復元", restoreDesc: "履歴データが見つかりました",
+    cancel: "キャンセル", restoreSuccess: "復元完了！", importFile: "ファイルから復元 (.json)", importSuccess: "インポート成功！"
   },
   en: {
     appTitle: "Life Ledger", backHome: "Back", totalExpense: "Total Exp (Est.)",
@@ -103,8 +122,8 @@ const TRANSLATIONS = {
     modeBalance: "Balance", photoGallery: "Gallery", photoGallerySub: "Monthly pic",
     uploadPhoto: "Upload", urgentMemo: "Urgent", addUrgent: "Urgent...", switchCurrency: "Switch",
     actualBreakdown: "Actual Breakdown", weeklyTotal: "Weekly Total (JPY)", breakdown: "Breakdown",
-    monthRate: "Month Rate", restoreData: "Restore", restoreTitle: "Found Data", restoreDesc: "Click to restore:",
-    cancel: "Cancel", restoreSuccess: "Restored!"
+    monthRate: "Month Rate", restoreData: "Restore", restoreTitle: "Data Recovery", restoreDesc: "Found legacy data",
+    cancel: "Cancel", restoreSuccess: "Restored!", importFile: "Import from file (.json)", importSuccess: "Imported Successfully!"
   }
 };
 
@@ -193,31 +212,47 @@ const ImageModal = ({ src, onClose }) => {
 };
 
 // --- 7. 数据恢复 Modal ---
-const RestoreModal = ({ isOpen, onClose, onRestore, keys }) => {
+const RestoreModal = ({ isOpen, onClose, onRestore, onFileUpload, keys, t }) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[999] bg-black/50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-        <h3 className="text-lg font-bold text-[#6d5e50] mb-2 flex items-center gap-2"><ArchiveRestoreIcon className="text-[#e6b422]"/> 恢复旧数据</h3>
-        <p className="text-xs text-[#8c7b6d] mb-4">检测到您手机里有这些版本的备份：</p>
-        <div className="space-y-2 max-h-[300px] overflow-y-auto">
-          {keys.map(key => (
-            <button 
-              key={key} 
-              onClick={() => onRestore(key)}
-              className="w-full p-3 bg-[#fdfcf8] border border-[#efeadd] rounded-xl text-left text-sm text-[#5c524b] hover:border-[#e6b422] active:bg-[#fffbf0] transition-colors"
-            >
-              {key.replace('warmLifeApp_', '')}
-            </button>
-          ))}
+        <h3 className="text-lg font-bold text-[#6d5e50] mb-2 flex items-center gap-2"><ArchiveRestoreIcon className="text-[#e6b422]"/> {t.restoreTitle}</h3>
+        <div className="mb-4">
+            <label className="flex items-center justify-center w-full p-3 bg-[#fffbf0] border-2 border-dashed border-[#e6b422] rounded-xl text-sm text-[#e6b422] font-bold cursor-pointer hover:bg-[#fff9c4] transition-colors gap-2">
+                <UploadCloudIcon size={18}/>
+                <input type="file" accept=".json" className="hidden" onChange={onFileUpload} />
+                {t.importFile}
+            </label>
         </div>
-        <button onClick={onClose} className="mt-4 w-full py-2 bg-gray-100 text-gray-500 rounded-xl text-sm font-bold">取消</button>
+        {keys.length > 0 && (
+          <>
+            <p className="text-xs text-[#8c7b6d] mb-2">{t.restoreDesc}</p>
+            <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar">
+              {keys.map(key => (
+                <button key={key} onClick={() => onRestore(key)} className="w-full p-3 bg-[#fdfcf8] border border-[#efeadd] rounded-xl text-left text-xs text-[#5c524b] hover:border-[#e6b422] active:bg-[#fffbf0] transition-colors truncate">
+                  {key.replace('warmLifeApp_', '...')}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+        <button onClick={onClose} className="mt-4 w-full py-2 bg-gray-100 text-gray-500 rounded-xl text-sm font-bold hover:bg-gray-200">{t.cancel}</button>
       </div>
     </div>
   );
 };
 
-// --- 8. 主应用 ---
+// --- 8. 外层容器 ---
+const AppWrapper = ({ children }) => (
+  <div className="flex justify-center min-h-screen bg-gray-100 font-sans">
+    <div className="w-full max-w-[393px] bg-[#fdfcf8] min-h-screen shadow-2xl relative overflow-x-hidden">
+      {children}
+    </div>
+  </div>
+);
+
+// --- 9. 主应用 ---
 export default function App() {
   const [view, setView] = useState('year'); 
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -259,10 +294,7 @@ export default function App() {
   const [goalsByYear, setGoalsByYear] = useState({ [new Date().getFullYear()]: [{id: 1, text: '坚持记账', completed: false}] });
 
   const t = TRANSLATIONS[lang]; 
-  
-  // 永久Key
   const STORAGE_KEY = 'warmLifeApp_MASTER_DB';
-  // 历史版本 Key 列表 (用于搜救)
   const LEGACY_KEYS = [
     'warmLifeApp_v110_auto_year_final', 'warmLifeApp_v105_jump_fix', 
     'warmLifeApp_v101_perfect_clean', 'warmLifeApp_v100_no_anxiety_final',
@@ -279,17 +311,12 @@ export default function App() {
   // 初始化 + 数据救援
   useEffect(() => {
     try {
-      // 1. 尝试从主Key加载
       let savedData = localStorage.getItem(STORAGE_KEY);
-      
-      // 2. 扫描所有历史 Key，准备给用户选择
       const foundKeys = LEGACY_KEYS.filter(k => localStorage.getItem(k));
       setFoundLegacyKeys(foundKeys);
 
-      // 3. 只有当主库完全没数据，且有历史数据时，才自动尝试恢复最近的一个
       if (!savedData && foundKeys.length > 0) {
-         savedData = localStorage.getItem(foundKeys[0]); // 取第一个（通常是最新的）
-         console.log("Auto-restored from:", foundKeys[0]);
+         savedData = localStorage.getItem(foundKeys[0]);
       }
 
       if (savedData) {
@@ -306,7 +333,6 @@ export default function App() {
         if(parsed.lang) setLang(parsed.lang);
         if(parsed.goalsByYear) setGoalsByYear(parsed.goalsByYear);
         else if(parsed.yearlyGoals) setGoalsByYear({ [new Date().getFullYear()]: parsed.yearlyGoals }); 
-
         if(parsed.yearlyReview) setYearlyReview(parsed.yearlyReview);
         if(parsed.monthlyPhotos) setMonthlyPhotos(parsed.monthlyPhotos);
         if(parsed.urgentTodos) setUrgentTodos(parsed.urgentTodos);
@@ -315,33 +341,55 @@ export default function App() {
     } catch (e) { console.error("Init error", e); }
   }, []);
 
-  // 持久化
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ fixedItems, allTodos, allMeals, transactions, exchangeRate, monthlyRates, inventory, wishlist, showBalance, lang, goalsByYear, yearlyReview, monthlyPhotos, urgentTodos }));
   }, [fixedItems, allTodos, allMeals, transactions, exchangeRate, monthlyRates, inventory, wishlist, showBalance, lang, goalsByYear, yearlyReview, monthlyPhotos, urgentTodos]);
 
-  // 手动恢复逻辑
   const handleManualRestore = (key) => {
     try {
       const savedData = localStorage.getItem(key);
       if (savedData) {
         const parsed = JSON.parse(savedData);
-        // 恢复数据
         if(parsed.fixedItems) setFixedItems(parsed.fixedItems);
         if(parsed.transactions) setTransactions(parsed.transactions);
         if(parsed.allTodos) setAllTodos(parsed.allTodos);
-        // ... (恢复其他重要数据)
         if(parsed.inventory) setInventory(parsed.inventory);
         if(parsed.wishlist) setWishlist(parsed.wishlist);
         if(parsed.urgentTodos) setUrgentTodos(parsed.urgentTodos);
         if(parsed.monthlyPhotos) setMonthlyPhotos(parsed.monthlyPhotos);
-        
-        alert("已成功从旧版本恢复数据！");
+        alert(t.restoreSuccess);
         setRestoreModalOpen(false);
       }
-    } catch (e) {
-      alert("恢复失败，数据可能已损坏");
-    }
+    } catch (e) { alert("Error"); }
+  };
+
+  const handleFileImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target.result);
+        if (parsed.fixedItems || parsed.transactions) {
+           if(window.confirm("Sure?")) {
+              if(parsed.fixedItems) setFixedItems(parsed.fixedItems);
+              if(parsed.transactions) setTransactions(parsed.transactions);
+              if(parsed.allTodos) setAllTodos(parsed.allTodos);
+              if(parsed.allMeals) setAllMeals(parsed.allMeals);
+              if(parsed.exchangeRate) setExchangeRate(parsed.exchangeRate);
+              if(parsed.inventory) setInventory(parsed.inventory);
+              if(parsed.wishlist) setWishlist(parsed.wishlist);
+              if(parsed.urgentTodos) setUrgentTodos(parsed.urgentTodos);
+              if(parsed.monthlyPhotos) setMonthlyPhotos(parsed.monthlyPhotos);
+              if(parsed.goalsByYear) setGoalsByYear(parsed.goalsByYear);
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+              alert(t.importSuccess);
+              setRestoreModalOpen(false);
+           }
+        } else { alert("Invalid file"); }
+      } catch (err) { alert("Error"); }
+    };
+    reader.readAsText(file);
   };
 
   const getRateForMonth = (year, monthIndex) => {
@@ -354,7 +402,6 @@ export default function App() {
     return isNaN(val) ? 0 : (currency === 'RMB' ? val * rate : val); 
   };
   
-  // 无焦虑模式显示：强制取绝对值，移除负号
   const formatMoney = (amountInJPY) => {
     const safe = Math.abs(isNaN(amountInJPY) ? 0 : amountInJPY);
     if (displayCurrency === 'JPY') return `¥${Math.round(safe).toLocaleString()}`;
@@ -494,16 +541,6 @@ export default function App() {
     setMonthlyRates(prev => ({ ...prev, [key]: parseFloat(val) }));
   };
 
-  const AppWrapper = ({ children }) => (
-    <div className="flex justify-center min-h-screen bg-gray-100 font-sans">
-      <div className="w-full max-w-[393px] bg-[#fdfcf8] min-h-screen shadow-2xl relative overflow-x-hidden">
-        {children}
-        <ImageModal src={previewImage} onClose={() => setPreviewImage(null)} />
-        <RestoreModal isOpen={restoreModalOpen} onClose={() => setRestoreModalOpen(false)} onRestore={handleManualRestore} keys={foundLegacyKeys} />
-      </div>
-    </div>
-  );
-
   // --- Views ---
 
   // 1. Supplies (生活补给)
@@ -601,6 +638,7 @@ export default function App() {
                         onClick={() => photo && setPreviewImage(photo)}
                         className={`aspect-square bg-[#fdfcf8] rounded-lg border border-[#f7f3e8] relative overflow-hidden flex items-center justify-center group ${photo ? 'cursor-pointer' : ''}`}
                       >
+                        {/* 修正：object-cover 确保正方形裁剪，显示完美 */}
                         {photo ? <img src={photo} className="w-full h-full object-cover" /> : <span className="text-xs text-[#dccab0] font-bold">{i+1}</span>}
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
                            <span className="text-white text-xs">{i+1}{t.month}</span>
@@ -956,6 +994,7 @@ export default function App() {
           </form>
         </Card>
       </div>
+      <ImageModal src={previewImage} onClose={() => setPreviewImage(null)} />
     </AppWrapper>
   );
 }

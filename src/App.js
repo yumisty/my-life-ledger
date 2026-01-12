@@ -1,28 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-// ==========================================
-// 1. 基础组件与配置 (全部移出 App 组件外，保证稳定性)
-// ==========================================
-
-// 图标包装器 - 修复：确保 children 能够正确渲染
+// --- 1. 基础图标组件 ---
 const IconWrapper = ({ children, size = 24, className = "" }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    {children}
-  </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
 );
 
-// 独立图标组件 - 修复：改为纯函数组件，避免对象引用错误
 const WalletIcon = (p) => <IconWrapper {...p}><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12h.01"/></IconWrapper>;
 const CalendarIcon = (p) => <IconWrapper {...p}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></IconWrapper>;
 const CheckSquareIcon = (p) => <IconWrapper {...p}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></IconWrapper>;
@@ -59,14 +41,79 @@ const XIcon = (p) => <IconWrapper {...p}><line x1="18" y1="6" x2="6" y2="18"/><l
 const ArchiveRestoreIcon = (p) => <IconWrapper {...p}><rect width="20" height="20" x="2" y="2" rx="2"/><path d="M12 12v6"/><path d="m15 15-3 3-3-3"/><path d="M4 8h16"/><path d="M4 16h6"/></IconWrapper>;
 const UploadCloudIcon = (p) => <IconWrapper {...p}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></IconWrapper>;
 
-// --- 2. 每日一句 ---
+const AppWrapper = ({ children }) => (
+  <div className="flex justify-center min-h-screen bg-gray-100 font-sans">
+    <div className="w-full max-w-[393px] bg-[#fdfcf8] min-h-screen shadow-2xl relative overflow-x-hidden">
+      {children}
+    </div>
+  </div>
+);
+
+const Card = ({ children, className = "", title, icon: Icon, action, onClick }) => (
+  <div onClick={onClick} className={`bg-[#fffbf0] rounded-2xl shadow-[2px_2px_0px_0px_rgba(234,224,200,1)] border border-[#efeadd] p-4 ${className} transition-all duration-300 ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''}`}>
+    {(title || Icon) && (
+      <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#efeadd]/50 border-dashed">
+        <div className="flex items-center gap-2 text-[#8c7b6d] font-bold text-sm md:text-base">
+          {Icon && <Icon size={18} className="text-[#e6b422]" />}
+          <h2>{title}</h2>
+        </div>
+        {action}
+      </div>
+    )}
+    {children}
+  </div>
+);
+
+const ImageModal = ({ src, onClose }) => {
+  if (!src) return null;
+  return (
+    <div className="fixed inset-0 z-[999] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={onClose}>
+      <div className="relative max-w-full max-h-full">
+        <img src={src} alt="Full view" className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" />
+        <button className="absolute -top-10 right-0 text-white p-2" onClick={onClose}><XIcon size={24}/></button>
+      </div>
+    </div>
+  );
+};
+
+const RestoreModal = ({ isOpen, onClose, onRestore, onFileUpload, keys, t }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[999] bg-black/50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+        <h3 className="text-lg font-bold text-[#6d5e50] mb-2 flex items-center gap-2"><ArchiveRestoreIcon className="text-[#e6b422]"/> {t.restoreTitle}</h3>
+        <div className="mb-4">
+            <label className="flex items-center justify-center w-full p-3 bg-[#fffbf0] border-2 border-dashed border-[#e6b422] rounded-xl text-sm text-[#e6b422] font-bold cursor-pointer hover:bg-[#fff9c4] transition-colors gap-2">
+                <UploadCloudIcon size={18}/>
+                <input type="file" accept=".json" className="hidden" onChange={onFileUpload} />
+                {t.importFile}
+            </label>
+        </div>
+        {keys.length > 0 && (
+          <>
+            <p className="text-xs text-[#8c7b6d] mb-2">{t.restoreDesc}</p>
+            <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar">
+              {keys.map(key => (
+                <button key={key} onClick={() => onRestore(key)} className="w-full p-3 bg-[#fdfcf8] border border-[#efeadd] rounded-xl text-left text-xs text-[#5c524b] hover:border-[#e6b422] active:bg-[#fffbf0] transition-colors truncate">
+                  {key.replace('warmLifeApp_', '...')}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+        <button onClick={onClose} className="mt-4 w-full py-2 bg-gray-100 text-gray-500 rounded-xl text-sm font-bold hover:bg-gray-200">{t.cancel}</button>
+      </div>
+    </div>
+  );
+};
+
+// --- 常量 ---
 const DAILY_QUOTES = [
   "把钱花在刀刃上。", "好好吃饭，好好生活。", "今天的克制，是为了明天的自由。",
   "不积跬步，无以至千里。", "生活原本沉闷，但跑起来就有风。", "物尽其用，就是最大的惜福。",
   "每一笔支出，都是在为想要的生活投票。", "快乐不一定要很贵。"
 ];
 
-// --- 3. 多语言字典 ---
 const TRANSLATIONS = {
   zh: {
     appTitle: "生活账本", backHome: "返回", totalExpense: "年度支出 (预估)",
@@ -127,7 +174,7 @@ const TRANSLATIONS = {
   }
 };
 
-// --- 4. 工具函数 ---
+// --- 工具函数 ---
 const getMonday = (d) => {
   d = new Date(d);
   const day = d.getDay();
@@ -152,7 +199,6 @@ const formatDateISO = (date) => {
   date = new Date(date.getTime() - (offset*60*1000));
   return date.toISOString().split('T')[0];
 };
-// 26.01.01 格式
 const formatDateTiny = (isoString) => {
   if (!isoString) return "--.--";
   const d = new Date(isoString);
@@ -182,77 +228,7 @@ const compressImage = (file) => {
   });
 };
 
-// --- 5. 通用卡片 ---
-const Card = ({ children, className = "", title, icon: Icon, action, onClick }) => (
-  <div onClick={onClick} className={`bg-[#fffbf0] rounded-2xl shadow-[2px_2px_0px_0px_rgba(234,224,200,1)] border border-[#efeadd] p-4 ${className} transition-all duration-300 ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''}`}>
-    {(title || Icon) && (
-      <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#efeadd]/50 border-dashed">
-        <div className="flex items-center gap-2 text-[#8c7b6d] font-bold text-sm md:text-base">
-          {Icon && <Icon size={18} className="text-[#e6b422]" />}
-          <h2>{title}</h2>
-        </div>
-        {action}
-      </div>
-    )}
-    {children}
-  </div>
-);
-
-// --- 6. 图片预览 Modal ---
-const ImageModal = ({ src, onClose }) => {
-  if (!src) return null;
-  return (
-    <div className="fixed inset-0 z-[999] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={onClose}>
-      <div className="relative max-w-full max-h-full">
-        <img src={src} alt="Full view" className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" />
-        <button className="absolute -top-10 right-0 text-white p-2" onClick={onClose}><XIcon size={24}/></button>
-      </div>
-    </div>
-  );
-};
-
-// --- 7. 数据恢复 Modal ---
-const RestoreModal = ({ isOpen, onClose, onRestore, onFileUpload, keys, t }) => {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 z-[999] bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-        <h3 className="text-lg font-bold text-[#6d5e50] mb-2 flex items-center gap-2"><ArchiveRestoreIcon className="text-[#e6b422]"/> {t.restoreTitle}</h3>
-        <div className="mb-4">
-            <label className="flex items-center justify-center w-full p-3 bg-[#fffbf0] border-2 border-dashed border-[#e6b422] rounded-xl text-sm text-[#e6b422] font-bold cursor-pointer hover:bg-[#fff9c4] transition-colors gap-2">
-                <UploadCloudIcon size={18}/>
-                <input type="file" accept=".json" className="hidden" onChange={onFileUpload} />
-                {t.importFile}
-            </label>
-        </div>
-        {keys.length > 0 && (
-          <>
-            <p className="text-xs text-[#8c7b6d] mb-2">{t.restoreDesc}</p>
-            <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar">
-              {keys.map(key => (
-                <button key={key} onClick={() => onRestore(key)} className="w-full p-3 bg-[#fdfcf8] border border-[#efeadd] rounded-xl text-left text-xs text-[#5c524b] hover:border-[#e6b422] active:bg-[#fffbf0] transition-colors truncate">
-                  {key.replace('warmLifeApp_', '...')}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-        <button onClick={onClose} className="mt-4 w-full py-2 bg-gray-100 text-gray-500 rounded-xl text-sm font-bold hover:bg-gray-200">{t.cancel}</button>
-      </div>
-    </div>
-  );
-};
-
-// --- 8. 外层容器 ---
-const AppWrapper = ({ children }) => (
-  <div className="flex justify-center min-h-screen bg-gray-100 font-sans">
-    <div className="w-full max-w-[393px] bg-[#fdfcf8] min-h-screen shadow-2xl relative overflow-x-hidden">
-      {children}
-    </div>
-  </div>
-);
-
-// --- 9. 主应用 ---
+// --- 主程序 ---
 export default function App() {
   const [view, setView] = useState('year'); 
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -268,20 +244,9 @@ export default function App() {
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const [foundLegacyKeys, setFoundLegacyKeys] = useState([]);
 
-  // 固定支出初始化 - 找回全家桶
-  const defaultFixed = [
-    { id: 1, name: '房租', amount: 76910, currency: 'JPY', type: 'expense' },
-    { id: 2, name: '话费', amount: 2732, currency: 'JPY', type: 'expense' },
-    { id: 3, name: '电费', amount: 0, currency: 'JPY', type: 'expense' },
-    { id: 4, name: '煤气费', amount: 0, currency: 'JPY', type: 'expense' },
-    { id: 5, name: '交通费', amount: 0, currency: 'JPY', type: 'expense' },
-    { id: 6, name: '医保', amount: 0, currency: 'JPY', type: 'expense' },
-    { id: 7, name: 'AppleCare+', amount: 1740, currency: 'JPY', type: 'expense' },
-    { id: 8, name: 'iCloud', amount: 450, currency: 'JPY', type: 'expense' },
-    { id: 9, name: '兼职收入', amount: 0, currency: 'JPY', type: 'income' }
-  ];
+  // 固定支出分月存储 { '2025-0': [...] }
+  const [fixedItemsByMonth, setFixedItemsByMonth] = useState({});
 
-  const [fixedItems, setFixedItems] = useState(defaultFixed);
   const [allTodos, setAllTodos] = useState({}); 
   const [allMeals, setAllMeals] = useState({});
   const [transactions, setTransactions] = useState([{ id: 1, date: formatDateISO(new Date()), name: '超市采购', amount: 1949, currency: 'JPY' }]);
@@ -294,21 +259,27 @@ export default function App() {
   const [goalsByYear, setGoalsByYear] = useState({ [new Date().getFullYear()]: [{id: 1, text: '坚持记账', completed: false}] });
 
   const t = TRANSLATIONS[lang]; 
-  const STORAGE_KEY = 'warmLifeApp_MASTER_DB';
+  const STORAGE_KEY = 'warmLifeApp_MASTER_DB_V2'; // 保持 Key 不变以保留数据
   const LEGACY_KEYS = [
-    'warmLifeApp_v110_auto_year_final', 'warmLifeApp_v105_jump_fix', 
-    'warmLifeApp_v101_perfect_clean', 'warmLifeApp_v100_no_anxiety_final',
-    'warmLifeApp_v88_full_restore', 'warmLifeApp_v80_no_minus_sign',
-    'warmLifeApp_v75_stable_fix', 'warmLifeApp_v70_rate_fix',
-    'warmLifeApp_v60_button_restore', 'warmLifeApp_v58_perfect_logic',
-    'warmLifeApp_v52_final_perfect_fix', 'warmLifeApp_v50_final_perfect',
-    'warmLifeApp_v47_date_delete_final', 'warmLifeApp_v46_final_fix_v2',
-    'warmLifeApp_v44_final_layout', 'warmLifeApp_v43_final_layout',
-    'warmLifeApp_v42_layout_final', 'warmLifeApp_v41_layout_fix',
-    'warmLifeApp_v40_feedback_fix', 'warmLifeApp_v33_iphone16pro'
+    'warmLifeApp_MASTER_DB_FINAL',
+    'warmLifeApp_MASTER_DB',
+    'warmLifeApp_v110_auto_year_final',
+    'warmLifeApp_v105_jump_fix' // Add previous key if needed
   ];
 
-  // 初始化 + 数据救援
+  // 默认固定支出模板 (包含 AppleCare, iCloud 等)
+  const defaultFixedTemplate = [
+    { id: 1, name: '房租', amount: 76910, currency: 'JPY', type: 'expense' },
+    { id: 2, name: '话费', amount: 2732, currency: 'JPY', type: 'expense' },
+    { id: 3, name: '电费', amount: 0, currency: 'JPY', type: 'expense' },
+    { id: 4, name: '煤气费', amount: 0, currency: 'JPY', type: 'expense' },
+    { id: 5, name: '交通费', amount: 0, currency: 'JPY', type: 'expense' },
+    { id: 6, name: '医保', amount: 0, currency: 'JPY', type: 'expense' },
+    { id: 7, name: 'AppleCare+', amount: 1740, currency: 'JPY', type: 'expense' },
+    { id: 8, name: 'iCloud', amount: 450, currency: 'JPY', type: 'expense' },
+    { id: 9, name: '兼职收入', amount: 0, currency: 'JPY', type: 'income' }
+  ];
+
   useEffect(() => {
     try {
       let savedData = localStorage.getItem(STORAGE_KEY);
@@ -321,7 +292,17 @@ export default function App() {
 
       if (savedData) {
         const parsed = JSON.parse(savedData);
-        if(parsed.fixedItems && parsed.fixedItems.length > 0) setFixedItems(parsed.fixedItems);
+        // 数据迁移逻辑
+        if (parsed.fixedItems && Array.isArray(parsed.fixedItems)) {
+            const migratedFixed = {};
+            for (let i = 0; i < 12; i++) {
+                migratedFixed[`${new Date().getFullYear()}-${i}`] = parsed.fixedItems;
+            }
+            setFixedItemsByMonth(migratedFixed);
+        } else if (parsed.fixedItemsByMonth) {
+            setFixedItemsByMonth(parsed.fixedItemsByMonth);
+        }
+
         if(parsed.allTodos) setAllTodos(parsed.allTodos);
         if(parsed.allMeals) setAllMeals(parsed.allMeals);
         if(parsed.transactions) setTransactions(parsed.transactions);
@@ -342,15 +323,21 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ fixedItems, allTodos, allMeals, transactions, exchangeRate, monthlyRates, inventory, wishlist, showBalance, lang, goalsByYear, yearlyReview, monthlyPhotos, urgentTodos }));
-  }, [fixedItems, allTodos, allMeals, transactions, exchangeRate, monthlyRates, inventory, wishlist, showBalance, lang, goalsByYear, yearlyReview, monthlyPhotos, urgentTodos]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ fixedItemsByMonth, allTodos, allMeals, transactions, exchangeRate, monthlyRates, inventory, wishlist, showBalance, lang, goalsByYear, yearlyReview, monthlyPhotos, urgentTodos }));
+  }, [fixedItemsByMonth, allTodos, allMeals, transactions, exchangeRate, monthlyRates, inventory, wishlist, showBalance, lang, goalsByYear, yearlyReview, monthlyPhotos, urgentTodos]);
 
   const handleManualRestore = (key) => {
     try {
       const savedData = localStorage.getItem(key);
       if (savedData) {
         const parsed = JSON.parse(savedData);
-        if(parsed.fixedItems) setFixedItems(parsed.fixedItems);
+        if (parsed.fixedItems && Array.isArray(parsed.fixedItems)) {
+            const migratedFixed = {};
+            for (let i = 0; i < 12; i++) migratedFixed[`${new Date().getFullYear()}-${i}`] = parsed.fixedItems;
+            setFixedItemsByMonth(migratedFixed);
+        } else if (parsed.fixedItemsByMonth) {
+            setFixedItemsByMonth(parsed.fixedItemsByMonth);
+        }
         if(parsed.transactions) setTransactions(parsed.transactions);
         if(parsed.allTodos) setAllTodos(parsed.allTodos);
         if(parsed.inventory) setInventory(parsed.inventory);
@@ -370,9 +357,15 @@ export default function App() {
     reader.onload = (event) => {
       try {
         const parsed = JSON.parse(event.target.result);
-        if (parsed.fixedItems || parsed.transactions) {
+        if (parsed.fixedItems || parsed.transactions || parsed.fixedItemsByMonth) {
            if(window.confirm("Sure?")) {
-              if(parsed.fixedItems) setFixedItems(parsed.fixedItems);
+              if (parsed.fixedItems && Array.isArray(parsed.fixedItems)) {
+                  const migratedFixed = {};
+                  for (let i = 0; i < 12; i++) migratedFixed[`${new Date().getFullYear()}-${i}`] = parsed.fixedItems;
+                  setFixedItemsByMonth(migratedFixed);
+              } else if (parsed.fixedItemsByMonth) {
+                  setFixedItemsByMonth(parsed.fixedItemsByMonth);
+              }
               if(parsed.transactions) setTransactions(parsed.transactions);
               if(parsed.allTodos) setAllTodos(parsed.allTodos);
               if(parsed.allMeals) setAllMeals(parsed.allMeals);
@@ -395,6 +388,27 @@ export default function App() {
   const getRateForMonth = (year, monthIndex) => {
     const key = `${year}-${monthIndex}`;
     return monthlyRates[key] !== undefined ? monthlyRates[key] : exchangeRate;
+  };
+
+  const getFixedItemsForMonth = (year, monthIndex) => {
+      const key = `${year}-${monthIndex}`;
+      return fixedItemsByMonth[key] || defaultFixedTemplate;
+  };
+  const updateFixedItemForMonth = (year, monthIndex, itemId, field, value) => {
+      const key = `${year}-${monthIndex}`;
+      const currentList = [...(fixedItemsByMonth[key] || defaultFixedTemplate)];
+      const updatedList = currentList.map(item => item.id === itemId ? { ...item, [field]: value } : item);
+      setFixedItemsByMonth({ ...fixedItemsByMonth, [key]: updatedList });
+  };
+  const addFixedItemForMonth = (year, monthIndex, newItem) => {
+      const key = `${year}-${monthIndex}`;
+      const currentList = [...(fixedItemsByMonth[key] || defaultFixedTemplate)];
+      setFixedItemsByMonth({ ...fixedItemsByMonth, [key]: [...currentList, newItem] });
+  };
+  const deleteFixedItemForMonth = (year, monthIndex, itemId) => {
+      const key = `${year}-${monthIndex}`;
+      const currentList = [...(fixedItemsByMonth[key] || defaultFixedTemplate)];
+      setFixedItemsByMonth({ ...fixedItemsByMonth, [key]: currentList.filter(i => i.id !== itemId) });
   };
 
   const toJPY = (amount, currency, rate) => { 
@@ -421,25 +435,26 @@ export default function App() {
     return tDate >= currentWeekStart && tDate <= new Date(currentWeekEnd.getTime() + 86400000 - 1);
   }).sort((a, b) => new Date(b.date) - new Date(a.date));
 
+  // Stats
   const weekStats = useMemo(() => {
     let jpyTotal = 0, rmbTotal = 0;
     currentTransactions.forEach(t => {
       const amt = parseFloat(t.amount) || 0;
-      if (t.currency === 'JPY') jpyTotal += amt;
-      else rmbTotal += amt;
+      if (t.currency === 'JPY') jpyTotal += amt; else rmbTotal += amt;
     });
     const thisMonthRate = getRateForMonth(currentDate.getFullYear(), currentDate.getMonth());
-
-    const fixedExpense = fixedItems.filter(i => i.type === 'expense').reduce((sum, i) => sum + toJPY(i.amount, i.currency, thisMonthRate), 0);
-    const fixedIncome = fixedItems.filter(i => i.type === 'income').reduce((sum, i) => sum + toJPY(i.amount, i.currency, thisMonthRate), 0);
+    const currentFixedItems = getFixedItemsForMonth(currentDate.getFullYear(), currentDate.getMonth());
+    const fixedExpense = currentFixedItems.filter(i => i.type === 'expense').reduce((sum, i) => sum + toJPY(i.amount, i.currency, thisMonthRate), 0);
+    const fixedIncome = currentFixedItems.filter(i => i.type === 'income').reduce((sum, i) => sum + toJPY(i.amount, i.currency, thisMonthRate), 0);
     const weeklyDailyTotalJPY = jpyTotal + (rmbTotal * thisMonthRate);
     return { fixedExpense, fixedIncome, weeklyDailyTotalJPY, jpyTotal, rmbTotal, thisMonthRate };
-  }, [fixedItems, currentTransactions, monthlyRates, exchangeRate, currentDate]);
+  }, [fixedItemsByMonth, currentTransactions, monthlyRates, exchangeRate, currentDate]);
 
   const getMonthStats = (year, monthIndex) => {
     const rate = getRateForMonth(year, monthIndex);
-    const fixedExpense = fixedItems.filter(i => i.type === 'expense').reduce((sum, i) => sum + toJPY(i.amount, i.currency, rate), 0);
-    const fixedIncome = fixedItems.filter(i => i.type === 'income').reduce((sum, i) => sum + toJPY(i.amount, i.currency, rate), 0);
+    const items = getFixedItemsForMonth(year, monthIndex);
+    const fixedExpense = items.filter(i => i.type === 'expense').reduce((sum, i) => sum + toJPY(i.amount, i.currency, rate), 0);
+    const fixedIncome = items.filter(i => i.type === 'income').reduce((sum, i) => sum + toJPY(i.amount, i.currency, rate), 0);
     const monthlyDaily = (transactions || []).filter(t => {
       const d = new Date(t.date);
       return d.getFullYear() === year && d.getMonth() === monthIndex;
@@ -448,33 +463,28 @@ export default function App() {
   };
 
   const annualStats = useMemo(() => {
-    let expJPY = 0, expRMB = 0;
-    let incJPY = 0, incRMB = 0;
-    let totalExpConverted = 0;
-    let totalIncConverted = 0;
-
+    let expJPY = 0, expRMB = 0, incJPY = 0, incRMB = 0;
+    let totalExpConverted = 0, totalIncConverted = 0;
     Array.from({length: 12}).forEach((_, i) => {
        const stats = getMonthStats(selectedYear, i);
        totalExpConverted += stats.totalExpense;
        totalIncConverted += stats.fixedIncome;
-    });
-
-    fixedItems.forEach(item => {
-      const amount = parseFloat(item.amount) || 0;
-      const yearlyAmount = amount * 12;
-      if (item.type === 'expense') {
-        if (item.currency === 'JPY') expJPY += yearlyAmount; else expRMB += yearlyAmount;
-      } else {
-        if (item.currency === 'JPY') incJPY += yearlyAmount; else incRMB += yearlyAmount;
-      }
+       const items = getFixedItemsForMonth(selectedYear, i);
+       items.forEach(item => {
+           const amount = parseFloat(item.amount) || 0;
+           if(item.type === 'expense') {
+               if(item.currency === 'JPY') expJPY += amount; else expRMB += amount;
+           } else {
+               if(item.currency === 'JPY') incJPY += amount; else incRMB += amount;
+           }
+       });
     });
     (transactions || []).filter(t => new Date(t.date).getFullYear() === selectedYear).forEach(t => {
       const amount = parseFloat(t.amount) || 0;
       if (t.currency === 'JPY') expJPY += amount; else expRMB += amount;
     });
-
     return { expJPY, expRMB, incJPY, incRMB, totalExpConverted, totalBalConverted: totalIncConverted - totalExpConverted };
-  }, [selectedYear, fixedItems, transactions, monthlyRates, exchangeRate]);
+  }, [selectedYear, fixedItemsByMonth, transactions, monthlyRates, exchangeRate]);
 
   const topPurchases = useMemo(() => {
     return [...(transactions || [])].filter(t => new Date(t.date).getFullYear() === selectedYear).sort((a, b) => toJPY(b.amount, b.currency, exchangeRate) - toJPY(a.amount, a.currency, exchangeRate)).slice(0, 5);
@@ -486,60 +496,31 @@ export default function App() {
   const activeUrgentTodos = urgentTodos.filter(t => !t.completed);
   const completedUrgentTodos = urgentTodos.filter(t => t.completed);
 
+  // Actions
   const changeWeek = (offset) => { const d = new Date(currentDate); d.setDate(d.getDate() + offset * 7); setCurrentDate(d); };
-  const handleMonthClick = (idx) => { 
-      const today = new Date();
-      if (today.getFullYear() === selectedYear && today.getMonth() === idx) {
-          setCurrentDate(today);
-      } else {
-          setCurrentDate(new Date(selectedYear, idx, 1));
-      }
-      setView('week'); 
-  };
+  const handleMonthClick = (idx) => { const today = new Date(); if (today.getFullYear() === selectedYear && today.getMonth() === idx) setCurrentDate(today); else setCurrentDate(new Date(selectedYear, idx, 1)); setView('week'); };
   const handleAddTodo = (e) => { if(e.key === 'Enter' && e.target.value.trim()) { setAllTodos({...allTodos, [currentWeekId]: [...currentTodos, { id: Date.now(), text: e.target.value, completed: false }]}); e.target.value = ''; } };
   const toggleTodo = (id) => setAllTodos({...allTodos, [currentWeekId]: currentTodos.map(t=>t.id===id?{...t,completed:!t.completed}:t)});
   const deleteTodo = (id) => setAllTodos({...allTodos, [currentWeekId]: currentTodos.filter(t=>t.id!==id)});
   const updateMeal = (d, type, v) => setAllMeals({...allMeals, [currentWeekId]: {...currentMeals, [d]: {...currentMeals[d], [type]: v}}});
-  
-  const addTransaction = (e) => { 
-    e.preventDefault(); 
-    const fd = new FormData(e.target); 
-    const dateVal = recordDate || formatDateISO(new Date()); 
-    setTransactions([{id: Date.now(), date: dateVal, name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency')}, ...transactions]); 
-    e.target.reset(); 
-    setRecordDate(dateVal);
-  };
+  const addTransaction = (e) => { e.preventDefault(); const fd = new FormData(e.target); const dateVal = recordDate || formatDateISO(new Date()); setTransactions([{id: Date.now(), date: dateVal, name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency')}, ...transactions]); e.target.reset(); setRecordDate(dateVal); };
   const deleteTransaction = (id) => setTransactions(transactions.filter(t => t.id !== id));
-  const updateFixedItemAmount = (id, newVal) => {
-      setFixedItems(fixedItems.map(item => item.id === id ? { ...item, amount: parseFloat(newVal) || 0 } : item));
-  };
-  const addFixedItem = (e) => { e.preventDefault(); const fd = new FormData(e.target); setFixedItems([...fixedItems, {id: Date.now(), name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency'), type: fd.get('type')}]); e.target.reset(); };
-  const deleteFixedItem = (id) => setFixedItems(fixedItems.filter(i => i.id !== id));
+  const addFixedItem = (e) => { e.preventDefault(); const fd = new FormData(e.target); const newItem = {id: Date.now(), name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency'), type: fd.get('type')}; addFixedItemForMonth(currentDate.getFullYear(), currentDate.getMonth(), newItem); e.target.reset(); };
   const addInventory = (e) => { if(e.key==='Enter'){ setInventory([...inventory, {id: Date.now(), name: e.target.value, quantity: ''}]); e.target.value=''; } };
   const updateInventoryQty = (id, val) => setInventory(inventory.map(i => i.id === id ? { ...i, quantity: val } : i));
   const deleteInventory = (id) => setInventory(inventory.filter(i => i.id !== id));
   const addWishlist = (e) => { e.preventDefault(); const fd = new FormData(e.target); setWishlist([...wishlist, {id: Date.now(), name: fd.get('name'), price: fd.get('price'), note: ''}]); e.target.reset(); };
   const deleteWishlist = (id) => setWishlist(wishlist.filter(w => w.id !== id));
-  const addYGoal = (e) => { 
-    if(e.key==='Enter' && e.target.value.trim()){ 
-      const newGoal = {id: Date.now(), text: e.target.value, completed: false};
-      setGoalsByYear(prev => ({ ...prev, [selectedYear]: [...(prev[selectedYear] || []), newGoal] }));
-      e.target.value=''; 
-    } 
-  };
+  const addYGoal = (e) => { if(e.key==='Enter' && e.target.value.trim()){ const newGoal = {id: Date.now(), text: e.target.value, completed: false}; setGoalsByYear(prev => ({ ...prev, [selectedYear]: [...(prev[selectedYear] || []), newGoal] })); e.target.value=''; } };
   const toggleYGoal = (id) => { setGoalsByYear(prev => ({ ...prev, [selectedYear]: prev[selectedYear].map(g => g.id === id ? { ...g, completed: !g.completed } : g) })); };
   const deleteYGoal = (id) => { setGoalsByYear(prev => ({ ...prev, [selectedYear]: prev[selectedYear].filter(g => g.id !== id) })); };
   const handlePhotoUpload = async (e, monthIndex) => { const file = e.target.files[0]; if(file) { try { const url = await compressImage(file); setMonthlyPhotos(prev => ({...prev, [`${selectedYear}-${monthIndex}`]: url})); } catch(err) { alert("Error"); } } };
   const toggleLang = () => { if (lang === 'zh') setLang('jp'); else if (lang === 'jp') setLang('en'); else setLang('zh'); };
-  const exportData = () => { const dataStr = localStorage.getItem(STORAGE_KEY); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `Backup_${formatDateISO(new Date())}.json`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
   const addUrgentTodo = (e) => { if(e.key==='Enter' && e.target.value.trim()){ setUrgentTodos([...urgentTodos, {id: Date.now(), text: e.target.value, completed: false}]); e.target.value=''; }};
   const toggleUrgent = (id) => setUrgentTodos(urgentTodos.map(t=>t.id===id?{...t,completed:!t.completed}:t));
   const deleteUrgent = (id) => setUrgentTodos(urgentTodos.filter(t=>t.id!==id));
-  
-  const setRateForMonth = (val) => {
-    const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
-    setMonthlyRates(prev => ({ ...prev, [key]: parseFloat(val) }));
-  };
+  const setRateForMonth = (val) => { const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}`; setMonthlyRates(prev => ({ ...prev, [key]: parseFloat(val) })); };
+  const exportData = () => { const dataStr = localStorage.getItem(STORAGE_KEY); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `Backup_${formatDateISO(new Date())}.json`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
 
   // --- Views ---
 
@@ -604,9 +585,7 @@ export default function App() {
                         <button onClick={()=>deleteYGoal(g.id)} className="text-[#dccab0] hover:text-[#e07a5f]"><Trash2Icon size={16}/></button>
                      </div>
                    ))}
-                   
                    <div className="relative mt-2"><div className="absolute left-3 top-3 text-[#dccab0]"><PlusIcon size={16}/></div><input onKeyDown={addYGoal} placeholder={t.addYearlyGoal} className="w-full pl-9 pr-4 py-2.5 bg-[#fdfcf8] border-2 border-dashed border-[#dccab0] rounded-xl text-sm focus:outline-none focus:border-[#e6b422]" /></div>
-
                    {completedYearGoals.length > 0 && (
                       <details className="mt-4 group">
                          <summary className="flex items-center gap-2 text-xs text-[#b09f8d] cursor-pointer select-none">
@@ -638,7 +617,6 @@ export default function App() {
                         onClick={() => photo && setPreviewImage(photo)}
                         className={`aspect-square bg-[#fdfcf8] rounded-lg border border-[#f7f3e8] relative overflow-hidden flex items-center justify-center group ${photo ? 'cursor-pointer' : ''}`}
                       >
-                        {/* 修正：object-cover 确保正方形裁剪，显示完美 */}
                         {photo ? <img src={photo} className="w-full h-full object-cover" /> : <span className="text-xs text-[#dccab0] font-bold">{i+1}</span>}
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
                            <span className="text-white text-xs">{i+1}{t.month}</span>
@@ -703,7 +681,6 @@ export default function App() {
             <div className="bg-[#4a403a] text-[#f2e6ce] p-5 rounded-3xl shadow-lg flex flex-col justify-between min-h-[140px] relative overflow-hidden">
                <div>
                  <div className="flex items-center gap-2 text-xs opacity-80 mb-2"><PieChartIcon size={14}/> {showBalance ? t.totalBalance : t.totalExpense}</div>
-                 {/* 修正：金额防溢出，break-all + 动态字号 */}
                  <div className={`text-2xl sm:text-3xl font-mono font-bold tracking-tight break-all ${showBalance && annualStats.totalBalConverted < 0 ? 'text-[#e07a5f]' : 'text-[#e6b422]'}`} style={{maxWidth: '100%'}}>
                     {formatMoney(showBalance ? annualStats.totalBalConverted : annualStats.totalExpConverted)}
                  </div>
@@ -715,12 +692,10 @@ export default function App() {
                  <div className="flex flex-col gap-0.5 font-mono text-sm">
                     <div className="flex justify-between">
                        <span>JPY</span>
-                       {/* 修正：绝对值显示 */}
                        <span>¥{Math.abs((showBalance ? annualStats.incJPY - annualStats.expJPY : annualStats.expJPY)).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                        <span>CNY</span>
-                       {/* 修正：绝对值显示 */}
                        <span>¥{Math.abs((showBalance ? annualStats.incRMB - annualStats.expRMB : annualStats.expRMB)).toLocaleString()}</span>
                     </div>
                  </div>
@@ -829,172 +804,8 @@ export default function App() {
          </div>
          
       </div>
-    </AppWrapper>
-  );
-
-  // 4. Week View
-  return (
-    <AppWrapper>
-      <div className="bg-[#f2e6ce] sticky top-0 z-50 shadow-sm border-b border-[#e6dcc0]">
-        <div className="max-w-3xl mx-auto px-4 py-3">
-          <button onClick={() => setView('year')} className="flex items-center gap-1 text-[#8c7b6d] text-sm font-bold hover:text-[#5c524b] mb-2 transition-colors"><HomeIcon size={16}/> {t.backHome}</button>
-          
-          {/* 月度汇率设置 */}
-          <div className="flex items-center justify-between bg-white/60 p-2 rounded-2xl border border-[#efeadd] mb-2">
-             <div className="flex items-center gap-2 text-xs text-[#8c7b6d] font-bold px-2">
-               {t.monthRate}
-               <input 
-                  type="number" 
-                  value={weekStats.thisMonthRate} 
-                  onChange={(e) => setRateForMonth(e.target.value)}
-                  placeholder={exchangeRate}
-                  className="w-12 bg-transparent border-b border-[#e6b422] text-center text-[#e6b422] focus:outline-none"
-               />
-             </div>
-          </div>
-
-          <div className="flex justify-between items-center bg-white/60 p-2 rounded-2xl border border-[#efeadd]">
-            <button onClick={() => changeWeek(-1)} className="p-2 hover:bg-[#e4d4b2] rounded-full transition-colors"><ChevronLeftIcon size={20}/></button>
-            <div className="text-center"><div className="text-[10px] font-bold text-[#b09f8d] uppercase tracking-wider mb-0.5">{t.weekView}</div><div className="flex items-center gap-2 text-lg font-black text-[#6d5e50]"><span className="text-[#e6b422]"><CalendarIcon size={18}/></span>{formatDateShort(currentWeekStart)} - {formatDateShort(currentWeekEnd)}</div></div>
-            <button onClick={() => changeWeek(1)} className="p-2 hover:bg-[#e4d4b2] rounded-full transition-colors"><ChevronRightIcon size={20}/></button>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-4 mt-4 space-y-6 pb-20">
-        <div className="flex flex-col gap-4">
-           <div className="bg-white rounded-3xl p-5 border-2 border-[#efeadd] shadow-sm">
-              <div className="text-[#8c7b6d] text-sm font-bold mb-1">{t.weeklyTotal}</div>
-              <div className="text-2xl font-black text-[#e6b422] font-mono tracking-tight">{formatMoneySimple(weekStats.weeklyDailyTotalJPY)}</div>
-              {/* 明细卡片：始终显示两种币种的原始数值 */}
-              <div className="mt-2 pt-2 border-t border-dashed border-[#efeadd] flex flex-col gap-0.5 text-xs text-[#b09f8d] font-mono">
-                 <div className="flex justify-between"><span>JPY:</span><span>¥{weekStats.jpyTotal.toLocaleString()}</span></div>
-                 <div className="flex justify-between"><span>CNY:</span><span>¥{weekStats.rmbTotal.toLocaleString()} (≈ ¥{Math.round(weekStats.rmbTotal * weekStats.thisMonthRate)})</span></div>
-              </div>
-           </div>
-           
-           <div className="bg-[#fffbf0] rounded-3xl p-5 border-2 border-[#efeadd] shadow-sm">
-              <div className="flex justify-between items-center mb-2"><div className="text-[#8c7b6d] text-sm font-bold">{t.fixedMonthly}</div><div className="text-xs text-[#b09f8d] bg-[#efeadd]/50 px-2 py-1 rounded">{t.fixedType}</div></div>
-              <div className="flex gap-8">
-                <div className="flex flex-col"><span className="text-xs text-[#b09f8d] flex items-center gap-1"><TrendingDownIcon size={10}/> {t.fixedExp}</span><span className="text-lg font-bold font-mono text-[#e07a5f]">{formatMoneySimple(weekStats.fixedExpense)}</span></div>
-                {showBalance && weekStats.fixedIncome > 0 && <div className="flex flex-col"><span className="text-xs text-[#b09f8d] flex items-center gap-1"><TrendingUpIcon size={10}/> {t.income}</span><span className="text-lg font-bold font-mono text-[#7ca982]">{formatMoneySimple(weekStats.fixedIncome)}</span></div>}
-              </div>
-           </div>
-        </div>
-        
-        <div className="flex flex-col gap-6">
-          <Card title={t.weekGoal} icon={CheckSquareIcon} className="min-h-[200px]">
-            <div className="space-y-3">
-              {currentTodos.map(todo => (
-                <div key={todo.id} className="group flex items-start gap-3 bg-[#fdfcf8] p-2 rounded-xl transition-all hover:bg-white border border-transparent hover:border-[#efeadd]">
-                  <input type="checkbox" checked={todo.completed} onChange={() => toggleTodo(todo.id)} className="mt-1 accent-[#e6b422]" />
-                  <span className={`flex-1 text-sm ${todo.completed ? 'text-[#b09f8d] line-through' : 'text-[#5c524b]'}`}>{todo.text}</span>
-                  <button onClick={() => deleteTodo(todo.id)} className="text-[#dccab0] hover:text-[#e07a5f]"><Trash2Icon size={16}/></button>
-                </div>
-              ))}
-              <div className="relative mt-2"><div className="absolute left-3 top-3 text-[#dccab0]"><PlusIcon size={16}/></div><input placeholder={t.addGoal} onKeyDown={handleAddTodo} className="w-full pl-9 pr-4 py-2.5 bg-[#fdfcf8] border-2 border-[#efeadd] rounded-xl text-sm focus:outline-none focus:border-[#e6b422]" /></div>
-            </div>
-          </Card>
-          
-          <Card title={t.record} icon={ReceiptIcon}>
-            <form onSubmit={addTransaction} className="space-y-3">
-              {/* Row 1: Date & Currency */}
-              <div className="flex gap-2">
-                <div className="relative w-1/2">
-                   <input 
-                      type="date" 
-                      name="date"
-                      defaultValue={formatDateISO(currentDate)}
-                      onChange={(e) => setRecordDate(e.target.value)}
-                      className="absolute inset-0 opacity-0 cursor-pointer z-10 w-full"
-                   />
-                   <div className="w-full p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm text-[#e6b422] font-mono font-bold text-center flex items-center justify-between cursor-pointer h-[46px]">
-                     <span>{formatDateTiny(recordDate)}</span>
-                     <CalendarIcon size={14} className="text-[#dccab0]"/>
-                   </div>
-                </div>
-                <select name="currency" className="w-1/2 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none px-2 text-center text-[#5c524b] font-bold h-[46px]"><option value="JPY">JPY</option><option value="RMB">RMB</option></select>
-              </div>
-
-              {/* Row 2: Name & Amount */}
-              <div className="flex gap-2">
-                <input name="name" placeholder={t.itemName} required className="w-[60%] p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none h-[46px]" />
-                <input name="amount" type="number" step="0.01" placeholder={t.amount} required className="w-[40%] p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none h-[46px]" />
-              </div>
-
-              <button type="submit" className="w-full py-3 bg-[#e6b422] text-white font-bold rounded-xl shadow-md hover:bg-[#d4a51e] flex justify-center items-center gap-2 h-[46px]"><PlusIcon size={18}/> {t.recordBtn}</button>
-            </form>
-          </Card>
-          
-          <div className="bg-white rounded-3xl border-2 border-[#efeadd] p-4">
-            <h3 className="text-[#8c7b6d] font-bold text-sm mb-3 pl-1 flex items-center gap-2"><LayoutIcon size={16}/> {t.details}</h3>
-            <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar">
-              {currentTransactions.map(tr => (
-                <div key={tr.id} className="flex justify-between items-center p-3 rounded-xl bg-[#fdfcf8] border border-[#f7f3e8]">
-                  <div className="flex flex-col"><span className="text-sm font-bold text-[#5c524b]">{tr.name}</span><span className="text-[10px] text-[#b09f8d]">{formatDateTiny(tr.date)}</span></div>
-                  <div className="flex items-center gap-2">
-                     <div className="text-right">
-                        <div className="font-mono font-bold text-[#6d5e50] text-base">
-                          {tr.currency === 'JPY' ? `¥${tr.amount}` : `¥${tr.amount} (RMB)`}
-                        </div>
-                        {tr.currency === 'RMB' && <div className="text-[10px] text-[#b09f8d]">≈ ¥{Math.round(tr.amount * exchangeRate)}</div>}
-                     </div>
-                     <button onClick={() => deleteTransaction(tr.id)} className="text-[#f9e79f] hover:text-[#e07a5f] p-1"><Trash2Icon size={14}/></button>
-                  </div>
-                </div>
-              ))}
-              {currentTransactions.length === 0 && <div className="text-center py-8 text-[#dccab0] text-sm">{t.noDetails}</div>}
-            </div>
-          </div>
-        </div>
-        
-        <Card title={t.mealPlan} icon={UtensilsIcon}>
-          <div className="space-y-3">
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
-              <div key={day} className="bg-white rounded-xl p-3 border border-[#efeadd] shadow-sm">
-                <div className="flex items-center gap-2 mb-2"><span className="text-xs font-bold text-white bg-[#e07a5f] px-2 py-0.5 rounded-full">{[t.month, 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]}</span></div>
-                <div className="grid grid-cols-3 gap-2">
-                  {['b', 'l', 'd'].map((type) => (
-                    <div key={type} className="relative group">
-                      <input value={currentMeals[day][type]} onChange={(e) => updateMeal(day, type, e.target.value)} placeholder={type==='b'?'早':type==='l'?'午':'晚'} className="w-full text-xs p-2 bg-[#fdfcf8] rounded-lg border border-transparent hover:border-[#dccab0] focus:border-[#e6b422] focus:bg-white outline-none text-center" />
-                      <div className="absolute right-1 top-1.5 opacity-20 pointer-events-none">{type==='b'?<CoffeeIcon size={10}/>:type==='l'?<SunIcon size={10}/>:<MoonIcon size={10}/>}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-        
-        <Card title={t.addFixed} icon={WalletIcon}>
-          <div className="space-y-2 mb-4">
-            {fixedItems.map(item => (
-              <div key={item.id} className="flex justify-between items-center text-sm p-2 bg-white rounded-lg border border-[#f7f3e8]">
-                <span className="text-[#5c524b]">{item.name}</span>
-                <div className="flex items-center gap-2">
-                   {/* 修复：移除所有负号显示，仅用颜色区分类型 */}
-                   <div className="text-right">
-                     <span className={`block font-mono font-bold ${item.type === 'income' ? 'text-[#7ca982]' : 'text-[#e07a5f]'}`}>
-                        {item.amount} <span className="text-[10px] text-[#b09f8d]">{item.currency}</span>
-                     </span>
-                     {item.currency === 'RMB' && <span className="block text-[10px] text-[#b09f8d] text-right">≈ {Math.round(item.amount * weekStats.thisMonthRate)} JPY</span>}
-                   </div>
-                   {/* 修复：点击数字可修改逻辑复杂，暂保持删除后重新添加更稳妥，或者您可以点击删除再加 */}
-                   <button onClick={() => deleteFixedItem(item.id)} className="text-[#dccab0] hover:text-[#e07a5f]"><Trash2Icon size={12}/></button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <form onSubmit={addFixedItem} className="grid grid-cols-4 gap-2">
-             <input name="name" placeholder={t.itemName} required className="col-span-4 p-2 bg-white border border-[#efeadd] rounded-lg text-xs outline-none" />
-             <input name="amount" type="number" placeholder="金额" required className="col-span-2 p-2 bg-white border border-[#efeadd] rounded-lg text-xs outline-none" />
-             <select name="currency" className="col-span-1 p-2 bg-white border border-[#efeadd] rounded-lg text-xs outline-none"><option value="JPY">JPY</option><option value="RMB">RMB</option></select>
-             <select name="type" className="col-span-1 p-2 bg-white border border-[#efeadd] rounded-lg text-xs outline-none"><option value="expense">{t.expense}</option><option value="income">{t.income}</option></select>
-             <button className="col-span-4 p-2 bg-[#8c7b6d] text-white text-xs rounded-lg hover:bg-[#6d5e50] font-bold">{t.addFixed}</button>
-          </form>
-        </Card>
-      </div>
       <ImageModal src={previewImage} onClose={() => setPreviewImage(null)} />
+      <RestoreModal isOpen={restoreModalOpen} onClose={() => setRestoreModalOpen(false)} onRestore={handleManualRestore} onFileUpload={handleFileImport} keys={foundLegacyKeys} t={t} />
     </AppWrapper>
   );
 }

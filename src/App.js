@@ -8,7 +8,6 @@ const IconWrapper = ({ children, size = 24, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
 );
 
-// 独立图标组件
 const WalletIcon = (p) => <IconWrapper {...p}><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12h.01"/></IconWrapper>;
 const CalendarIcon = (p) => <IconWrapper {...p}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></IconWrapper>;
 const CheckSquareIcon = (p) => <IconWrapper {...p}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></IconWrapper>;
@@ -21,7 +20,7 @@ const CoffeeIcon = (p) => <IconWrapper {...p}><path d="M18 8h1a4 4 0 0 1 0 8h-1"
 const SunIcon = (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></IconWrapper>;
 const MoonIcon = (p) => <IconWrapper {...p}><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></IconWrapper>;
 const LayoutIcon = (p) => <IconWrapper {...p}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></IconWrapper>;
-const ReceiptIcon = (p) => <IconWrapper {...p}><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M16 8h-6"/><path d="M16 12h-6"/><path d="M16 16h-6"/></IconWrapper>;
+const ReceiptIcon = (p) => <IconWrapper {...p}><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M16 8h-6"/><path d="M16 12h-6"/><path d="M16 16h-6"/></IconWrapper>;
 const TrendingUpIcon = (p) => <IconWrapper {...p}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></IconWrapper>;
 const TrendingDownIcon = (p) => <IconWrapper {...p}><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></IconWrapper>;
 const HomeIcon = (p) => <IconWrapper {...p}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></IconWrapper>;
@@ -58,7 +57,6 @@ const Card = ({ children, className = "", title, icon, action, onClick }) => (
     {(title || icon) && (
       <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#efeadd]/50 border-dashed">
         <div className="flex items-center gap-2 text-[#8c7b6d] font-bold text-sm md:text-base">
-          {/* 这里的 icon 已经是一个 JSX Element */}
           {icon && <span className="text-[#e6b422]">{icon}</span>}
           <h2>{title}</h2>
         </div>
@@ -115,9 +113,9 @@ const RestoreModal = ({ isOpen, onClose, onRestore, onFileUpload, keys, t }) => 
 const DAILY_QUOTES = ["把钱花在刀刃上。", "好好吃饭，好好生活。", "今天的克制，是为了明天的自由。", "不积跬步，无以至千里。", "生活原本沉闷，但跑起来就有风。", "物尽其用，就是最大的惜福。", "每一笔支出，都是在为想要的生活投票。", "快乐不一定要很贵。"];
 
 const TRANSLATIONS = {
-  zh: { appTitle: "生活账本", backHome: "返回", totalExpense: "年度支出 (预估)", totalBalance: "年度结余 (预估)", exchangeRate: "汇率 (1 RMB)", supplies: "生活补给", inventory: "冰箱", wishlist: "心愿", inventoryPlaceholder: "余粮...", wishlistPlaceholder: "想买...", qty: "剩?", clickToManage: "点击管理", fixedExp: "固定", income: "收入", dailyExp: "日常", monthly: "月", month: "月", weekView: "周视图", weekGoal: "本周目标", addGoal: "添加任务...", record: "记一笔", recordBtn: "记账", itemName: "项目名称", date: "日期", amount: "金额", mealPlan: "食谱", fixedMonthly: "固定收支", fixedType: "每月", addFixed: "添加固定项", expense: "支出", details: "明细", noDetails: "暂无记录", yearlyGoalsTitle: "年度目标", myGoals: "我的目标", addYearlyGoal: "立 Flag...", yearReview: "小结", reviewPlaceholder: "写点什么...", topPurchases: "高光消费 (Top 5)", topPurchasesSub: "钱花哪了", modeExpenditure: "支出模式", modeBalance: "收支模式", photoGallery: "年度回忆", photoGallerySub: "每月一张 (点击大图)", uploadPhoto: "上传", urgentMemo: "紧急待办", addUrgent: "加急事...", switchCurrency: "切换显示", actualBreakdown: "实际构成", weeklyTotal: "本月总支出 (All)", breakdown: "构成", monthRate: "本月汇率 (1RMB=)", restoreData: "恢复数据", restoreTitle: "数据恢复中心", restoreDesc: "检测到本地有历史备份", cancel: "取消", restoreSuccess: "恢复成功！", importFile: "从文件导入 (.json)", importSuccess: "文件导入成功！" },
-  jp: { appTitle: "生活家計簿", backHome: "戻る", totalExpense: "年間支出 (予想)", totalBalance: "年間収支 (予想)", exchangeRate: "レート(1RMB)", supplies: "生活用品", inventory: "冷蔵庫", wishlist: "心願", inventoryPlaceholder: "在庫...", wishlistPlaceholder: "欲しい...", qty: "残?", clickToManage: "管理する", fixedExp: "固定費", income: "収入", dailyExp: "生活費", monthly: "月", month: "月", weekView: "週間", weekGoal: "今週の目標", addGoal: "タスク...", record: "記帳", recordBtn: "保存", itemName: "項目名", date: "日付", amount: "金額", mealPlan: "献立", fixedMonthly: "固定収支", fixedType: "毎月", addFixed: "固定費追加", expense: "支出", details: "明細", noDetails: "記録なし", yearlyGoalsTitle: "年間目標", myGoals: "今年の目標", addYearlyGoal: "目標追加...", yearReview: "年間レビュー", reviewPlaceholder: "一言...", topPurchases: "高額出費", topPurchasesSub: "何買った?", modeExpenditure: "支出のみ", modeBalance: "収支管理", photoGallery: "年間写真", photoGallerySub: "毎月の記録", uploadPhoto: "写真", urgentMemo: "緊急メモ", addUrgent: "急用...", switchCurrency: "通貨切替", actualBreakdown: "実数内訳", weeklyTotal: "今月合計 (All)", breakdown: "内訳", monthRate: "今月レート", restoreData: "復元", restoreTitle: "データ復元", restoreDesc: "履歴データが見つかりました", cancel: "キャンセル", restoreSuccess: "復元完了！", importFile: "ファイルから復元 (.json)", importSuccess: "インポート成功！" },
-  en: { appTitle: "Life Ledger", backHome: "Back", totalExpense: "Total Exp (Est.)", totalBalance: "Total Bal (Est.)", exchangeRate: "Rate(1RMB)", supplies: "Supplies", inventory: "Pantry", wishlist: "Wishlist", inventoryPlaceholder: "Add...", wishlistPlaceholder: "Item...", qty: "Qty", clickToManage: "Manage", fixedExp: "Fixed", income: "Income", dailyExp: "Daily", monthly: "Month", month: "Mon", weekView: "Week", weekGoal: "Goals", addGoal: "Task...", record: "Add", recordBtn: "Save", itemName: "Item", date: "Date", amount: "Amt", mealPlan: "Meals", fixedMonthly: "Monthly Fixed", fixedType: "Recurring", addFixed: "Add Fixed", expense: "Exp", details: "Details", noDetails: "Empty", yearlyGoalsTitle: "Yearly", myGoals: "Goals", addYearlyGoal: "Add...", yearReview: "Review", reviewPlaceholder: "Notes...", topPurchases: "Top 5", topPurchasesSub: "Spending", modeExpenditure: "Exp Only", modeBalance: "Balance", photoGallery: "Gallery", photoGallerySub: "Monthly pic", uploadPhoto: "Upload", urgentMemo: "Urgent", addUrgent: "Urgent...", switchCurrency: "Switch", actualBreakdown: "Actual Breakdown", weeklyTotal: "Monthly Total (All)", breakdown: "Breakdown", monthRate: "Month Rate", restoreData: "Restore", restoreTitle: "Data Recovery", restoreDesc: "Found legacy data", cancel: "Cancel", restoreSuccess: "Restored!", importFile: "Import from file (.json)", importSuccess: "Imported Successfully!" }
+  zh: { appTitle: "生活账本", backHome: "返回", totalExpense: "年度支出 (预估)", totalBalance: "年度结余 (预估)", exchangeRate: "汇率 (1 RMB)", supplies: "生活补给", inventory: "冰箱", wishlist: "心愿", inventoryPlaceholder: "余粮...", wishlistPlaceholder: "想买...", qty: "剩?", clickToManage: "点击管理", fixedExp: "固定", income: "收入", dailyExp: "日常", monthly: "月", month: "月", weekView: "周视图", weekGoal: "本周目标", addGoal: "添加任务...", record: "记一笔", recordBtn: "记账", itemName: "项目名称", date: "日期", amount: "金额", mealPlan: "食谱", fixedMonthly: "固定收支", fixedType: "每月", addFixed: "添加固定项", expense: "支出", details: "明细", noDetails: "暂无记录", yearlyGoalsTitle: "年度目标", myGoals: "我的目标", addYearlyGoal: "立 Flag...", yearReview: "小结", reviewPlaceholder: "写点什么...", topPurchases: "高光消费 (Top 5)", topPurchasesSub: "钱花哪了", modeExpenditure: "支出模式", modeBalance: "收支模式", photoGallery: "年度回忆", photoGallerySub: "每月一张 (点击大图)", uploadPhoto: "上传", urgentMemo: "紧急待办", addUrgent: "加急事...", switchCurrency: "切换显示", actualBreakdown: "实际构成", weeklyTotal: "本周合计 (JPY)", breakdown: "构成", monthRate: "本月汇率 (1RMB=)", restoreData: "恢复数据", restoreTitle: "数据恢复中心", restoreDesc: "检测到本地有历史备份", cancel: "取消", restoreSuccess: "恢复成功！", importFile: "从文件导入 (.json)", importSuccess: "文件导入成功！" },
+  jp: { appTitle: "生活家計簿", backHome: "戻る", totalExpense: "年間支出 (予想)", totalBalance: "年間収支 (予想)", exchangeRate: "レート(1RMB)", supplies: "生活用品", inventory: "冷蔵庫", wishlist: "心願", inventoryPlaceholder: "在庫...", wishlistPlaceholder: "欲しい...", qty: "残?", clickToManage: "管理する", fixedExp: "固定費", income: "収入", dailyExp: "生活費", monthly: "月", month: "月", weekView: "週間", weekGoal: "今週の目標", addGoal: "タスク...", record: "記帳", recordBtn: "保存", itemName: "項目名", date: "日付", amount: "金額", mealPlan: "献立", fixedMonthly: "固定収支", fixedType: "毎月", addFixed: "固定費追加", expense: "支出", details: "明細", noDetails: "記録なし", yearlyGoalsTitle: "年間目標", myGoals: "今年の目標", addYearlyGoal: "目標追加...", yearReview: "年間レビュー", reviewPlaceholder: "一言...", topPurchases: "高額出費", topPurchasesSub: "何買った?", modeExpenditure: "支出のみ", modeBalance: "収支管理", photoGallery: "年間写真", photoGallerySub: "毎月の記録", uploadPhoto: "写真", urgentMemo: "緊急メモ", addUrgent: "急用...", switchCurrency: "通貨切替", actualBreakdown: "実数内訳", weeklyTotal: "今週合計 (JPY)", breakdown: "内訳", monthRate: "今月レート", restoreData: "復元", restoreTitle: "データ復元", restoreDesc: "履歴データが見つかりました", cancel: "キャンセル", restoreSuccess: "復元完了！", importFile: "ファイルから復元 (.json)", importSuccess: "インポート成功！" },
+  en: { appTitle: "Life Ledger", backHome: "Back", totalExpense: "Total Exp (Est.)", totalBalance: "Total Bal (Est.)", exchangeRate: "Rate(1RMB)", supplies: "Supplies", inventory: "Pantry", wishlist: "Wishlist", inventoryPlaceholder: "Add...", wishlistPlaceholder: "Item...", qty: "Qty", clickToManage: "Manage", fixedExp: "Fixed", income: "Income", dailyExp: "Daily", monthly: "Month", month: "Mon", weekView: "Week", weekGoal: "Goals", addGoal: "Task...", record: "Add", recordBtn: "Save", itemName: "Item", date: "Date", amount: "Amt", mealPlan: "Meals", fixedMonthly: "Monthly Fixed", fixedType: "Recurring", addFixed: "Add Fixed", expense: "Exp", details: "Details", noDetails: "Empty", yearlyGoalsTitle: "Yearly", myGoals: "Goals", addYearlyGoal: "Add...", yearReview: "Review", reviewPlaceholder: "Notes...", topPurchases: "Top 5", topPurchasesSub: "Spending", modeExpenditure: "Exp Only", modeBalance: "Balance", photoGallery: "Gallery", photoGallerySub: "Monthly pic", uploadPhoto: "Upload", urgentMemo: "Urgent", addUrgent: "Urgent...", switchCurrency: "Switch", actualBreakdown: "Actual Breakdown", weeklyTotal: "Weekly Total (JPY)", breakdown: "Breakdown", monthRate: "Month Rate", restoreData: "Restore", restoreTitle: "Data Recovery", restoreDesc: "Found legacy data", cancel: "Cancel", restoreSuccess: "Restored!", importFile: "Import from file (.json)", importSuccess: "Imported Successfully!" }
 };
 
 const getMonday = (d) => { const day = d.getDay(); const diff = d.getDate() - day + (day === 0 ? -6 : 1); const monday = new Date(d.setDate(diff)); monday.setHours(0, 0, 0, 0); return monday; };
@@ -143,6 +141,7 @@ export default function App() {
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const [foundLegacyKeys, setFoundLegacyKeys] = useState([]);
 
+  // 状态
   const [fixedItemsByMonth, setFixedItemsByMonth] = useState({});
   const [allTodos, setAllTodos] = useState({}); 
   const [allMeals, setAllMeals] = useState({});
@@ -156,9 +155,16 @@ export default function App() {
   const [goalsByYear, setGoalsByYear] = useState({ [new Date().getFullYear()]: [{id: 1, text: '坚持记账', completed: false}] });
 
   const t = TRANSLATIONS[lang]; 
-  const STORAGE_KEY = 'warmLifeApp_MASTER_DB_V104_FIXED_FINAL';
-  const LEGACY_KEYS = ['warmLifeApp_MASTER_DB_V2', 'warmLifeApp_MASTER_DB_FINAL', 'warmLifeApp_MASTER_DB', 'warmLifeApp_v110_auto_year_final'];
-  
+  const STORAGE_KEY = 'warmLifeApp_MASTER_DB_V107_FINAL';
+  const LEGACY_KEYS = [
+    'warmLifeApp_MASTER_DB_V104_FIXED_FINAL',
+    'warmLifeApp_MASTER_DB_V103_FINAL',
+    'warmLifeApp_MASTER_DB_V2',
+    'warmLifeApp_MASTER_DB_FINAL',
+    'warmLifeApp_MASTER_DB',
+    'warmLifeApp_v110_auto_year_final'
+  ];
+
   const defaultFixedTemplate = [
     { id: 1, name: '房租', amount: 76910, currency: 'JPY', type: 'expense' },
     { id: 2, name: '话费', amount: 2732, currency: 'JPY', type: 'expense' },
@@ -171,10 +177,43 @@ export default function App() {
     { id: 9, name: '兼职收入', amount: 0, currency: 'JPY', type: 'income' }
   ];
 
-  // 功能函数定义 (Top Level)
-  const getRateForMonth = (year, monthIndex) => { const key = `${year}-${monthIndex}`; return monthlyRates[key] !== undefined ? monthlyRates[key] : exchangeRate; };
-  const getFixedItemsForMonth = (year, monthIndex) => { const key = `${year}-${monthIndex}`; return fixedItemsByMonth[key] || defaultFixedTemplate; };
+  // ==========================================
+  // 核心功能函数 (必须定义在 useEffect 和 useMemo 之前)
+  // ==========================================
+
+  const getRateForMonth = (year, monthIndex) => {
+    const key = `${year}-${monthIndex}`;
+    return monthlyRates[key] !== undefined ? monthlyRates[key] : exchangeRate;
+  };
+
+  // 这里的关键修复：如果 fixedItemsByMonth[key] 是空的，返回 defaultFixedTemplate，防止 .map 崩溃
+  const getFixedItemsForMonth = (year, monthIndex) => {
+      const key = `${year}-${monthIndex}`;
+      const items = fixedItemsByMonth[key];
+      // 增加 safe array check
+      if (Array.isArray(items)) return items;
+      return defaultFixedTemplate;
+  };
+
+  const updateFixedItemForMonth = (year, monthIndex, itemId, field, value) => {
+      const key = `${year}-${monthIndex}`;
+      const currentList = [...getFixedItemsForMonth(year, monthIndex)].map(i => ({...i}));
+      const updatedList = currentList.map(item => item.id === itemId ? { ...item, [field]: value } : item);
+      setFixedItemsByMonth(prev => ({ ...prev, [key]: updatedList }));
+  };
   
+  const addFixedItemForMonth = (year, monthIndex, newItem) => {
+      const key = `${year}-${monthIndex}`;
+      const currentList = [...getFixedItemsForMonth(year, monthIndex)].map(i => ({...i}));
+      setFixedItemsByMonth(prev => ({ ...prev, [key]: [...currentList, newItem] }));
+  };
+
+  const deleteFixedItemForMonth = (year, monthIndex, itemId) => {
+      const key = `${year}-${monthIndex}`;
+      const currentList = [...getFixedItemsForMonth(year, monthIndex)].map(i => ({...i}));
+      setFixedItemsByMonth(prev => ({ ...prev, [key]: currentList.filter(i => i.id !== itemId) }));
+  };
+
   const toJPY = (amount, currency, rate) => { 
     const val = parseFloat(amount); return isNaN(val) ? 0 : (currency === 'RMB' ? val * rate : val); 
   };
@@ -187,94 +226,17 @@ export default function App() {
   
   const formatMoneySimple = (val) => `¥${Math.round(Math.abs(isNaN(val)?0:val)).toLocaleString()}`;
 
-  const updateFixedItemForMonth = (year, monthIndex, itemId, field, value) => {
-      const key = `${year}-${monthIndex}`;
-      // Deep copy to ensure independence
-      const currentList = (fixedItemsByMonth[key] || defaultFixedTemplate).map(i => ({...i}));
-      const updatedList = currentList.map(item => item.id === itemId ? { ...item, [field]: value } : item);
-      setFixedItemsByMonth(prev => ({ ...prev, [key]: updatedList }));
-  };
-  
-  const addFixedItemForMonth = (year, monthIndex, newItem) => {
-      const key = `${year}-${monthIndex}`;
-      const currentList = (fixedItemsByMonth[key] || defaultFixedTemplate).map(i => ({...i}));
-      setFixedItemsByMonth(prev => ({ ...prev, [key]: [...currentList, newItem] }));
-  };
-
-  const deleteFixedItemForMonth = (year, monthIndex, itemId) => {
-      const key = `${year}-${monthIndex}`;
-      const currentList = (fixedItemsByMonth[key] || defaultFixedTemplate).map(i => ({...i}));
-      setFixedItemsByMonth(prev => ({ ...prev, [key]: currentList.filter(i => i.id !== itemId) }));
-  };
-
   const handleManualRestore = (key) => {
     try { const savedData = localStorage.getItem(key); if (savedData) { const parsed = JSON.parse(savedData); if (parsed.fixedItems && Array.isArray(parsed.fixedItems)) { const migratedFixed = {}; for (let i = 0; i < 12; i++) migratedFixed[`${new Date().getFullYear()}-${i}`] = parsed.fixedItems; setFixedItemsByMonth(migratedFixed); } else if (parsed.fixedItemsByMonth) { setFixedItemsByMonth(parsed.fixedItemsByMonth); } if(parsed.transactions) setTransactions(parsed.transactions); if(parsed.allTodos) setAllTodos(parsed.allTodos); if(parsed.inventory) setInventory(parsed.inventory); if(parsed.wishlist) setWishlist(parsed.wishlist); if(parsed.urgentTodos) setUrgentTodos(parsed.urgentTodos); if(parsed.monthlyPhotos) setMonthlyPhotos(parsed.monthlyPhotos); alert(t.restoreSuccess); setRestoreModalOpen(false); } } catch (e) { alert("Error"); }
   };
-  const handleFileImport = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (event) => { try { const parsed = JSON.parse(event.target.result); if (parsed.fixedItems || parsed.transactions || parsed.fixedItemsByMonth) { if(window.confirm("Sure?")) { if (parsed.fixedItems && Array.isArray(parsed.fixedItems)) { const migratedFixed = {}; for (let i = 0; i < 12; i++) migratedFixed[`${new Date().getFullYear()}-${i}`] = parsed.fixedItems; setFixedItemsByMonth(migratedFixed); } else if (parsed.fixedItemsByMonth) { setFixedItemsByMonth(parsed.fixedItemsByMonth); } if(parsed.transactions) setTransactions(parsed.transactions); if(parsed.allTodos) setAllTodos(parsed.allTodos); if(parsed.allMeals) setAllMeals(parsed.allMeals); if(parsed.exchangeRate) setExchangeRate(parsed.exchangeRate); if(parsed.inventory) setInventory(parsed.inventory); if(parsed.wishlist) setWishlist(parsed.wishlist); if(parsed.urgentTodos) setUrgentTodos(parsed.urgentTodos); if(parsed.monthlyPhotos) setMonthlyPhotos(parsed.monthlyPhotos); if(parsed.goalsByYear) setGoalsByYear(parsed.goalsByYear); localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed)); alert(t.importSuccess); setRestoreModalOpen(false); } } else { alert("Invalid file"); } } catch (err) { alert("Error"); } }; reader.readAsText(file); };
+
+  const handleFileImport = (e) => {
+    const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (event) => { try { const parsed = JSON.parse(event.target.result); if (parsed.fixedItems || parsed.transactions || parsed.fixedItemsByMonth) { if(window.confirm("Sure?")) { if (parsed.fixedItems && Array.isArray(parsed.fixedItems)) { const migratedFixed = {}; for (let i = 0; i < 12; i++) migratedFixed[`${new Date().getFullYear()}-${i}`] = parsed.fixedItems; setFixedItemsByMonth(migratedFixed); } else if (parsed.fixedItemsByMonth) { setFixedItemsByMonth(parsed.fixedItemsByMonth); } if(parsed.transactions) setTransactions(parsed.transactions); if(parsed.allTodos) setAllTodos(parsed.allTodos); if(parsed.allMeals) setAllMeals(parsed.allMeals); if(parsed.exchangeRate) setExchangeRate(parsed.exchangeRate); if(parsed.inventory) setInventory(parsed.inventory); if(parsed.wishlist) setWishlist(parsed.wishlist); if(parsed.urgentTodos) setUrgentTodos(parsed.urgentTodos); if(parsed.monthlyPhotos) setMonthlyPhotos(parsed.monthlyPhotos); if(parsed.goalsByYear) setGoalsByYear(parsed.goalsByYear); localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed)); alert(t.importSuccess); setRestoreModalOpen(false); } } else { alert("Invalid file"); } } catch (err) { alert("Error"); } }; reader.readAsText(file);
+  };
+  
   const exportData = () => { const dataStr = localStorage.getItem(STORAGE_KEY); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `Backup_${formatDateISO(new Date())}.json`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
   const resetAllData = () => { if(window.confirm("确定要清空所有数据吗？不可恢复。")) { localStorage.removeItem(STORAGE_KEY); window.location.reload(); } };
-  const changeWeek = (offset) => { const d = new Date(currentDate); d.setDate(d.getDate() + offset * 7); setCurrentDate(d); };
-  const handleMonthClick = (idx) => { const today = new Date(); if (today.getFullYear() === selectedYear && today.getMonth() === idx) setCurrentDate(today); else setCurrentDate(new Date(selectedYear, idx, 1)); setView('week'); };
-  const handleAddTodo = (e) => { if(e.key === 'Enter' && e.target.value.trim()) { setAllTodos({...allTodos, [getWeekId(currentWeekStart)]: [...(allTodos[getWeekId(currentWeekStart)]||[]), { id: Date.now(), text: e.target.value, completed: false }]}); e.target.value = ''; } };
-  const toggleTodo = (id) => setAllTodos({...allTodos, [getWeekId(currentWeekStart)]: (allTodos[getWeekId(currentWeekStart)]||[]).map(t=>t.id===id?{...t,completed:!t.completed}:t)});
-  const deleteTodo = (id) => setAllTodos({...allTodos, [getWeekId(currentWeekStart)]: (allTodos[getWeekId(currentWeekStart)]||[]).filter(t=>t.id!==id)});
-  const updateMeal = (d, type, v) => setAllMeals({...allMeals, [getWeekId(currentWeekStart)]: {...(allMeals[getWeekId(currentWeekStart)]||{ Mon: {b:'',l:'',d:''}, Tue: {b:'',l:'',d:''}, Wed: {b:'',l:'',d:''}, Thu: {b:'',l:'',d:''}, Fri: {b:'',l:'',d:''}, Sat: {b:'',l:'',d:''}, Sun: {b:'',l:'',d:''} }), [d]: {...(allMeals[getWeekId(currentWeekStart)]?.[d]||{b:'',l:'',d:''}), [type]: v}}});
-  const addTransaction = (e) => { e.preventDefault(); const fd = new FormData(e.target); const dateVal = recordDate || formatDateISO(new Date()); setTransactions([{id: Date.now(), date: dateVal, name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency')}, ...transactions]); e.target.reset(); setRecordDate(dateVal); };
-  const deleteTransaction = (id) => setTransactions(transactions.filter(t => t.id !== id));
-  const addFixedItem = (e) => { e.preventDefault(); const fd = new FormData(e.target); const newItem = {id: Date.now(), name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency'), type: fd.get('type')}; addFixedItemForMonth(currentDate.getFullYear(), currentDate.getMonth(), newItem); e.target.reset(); };
-  const addInventory = (e) => { if(e.key==='Enter'){ setInventory([...inventory, {id: Date.now(), name: e.target.value, quantity: ''}]); e.target.value=''; } };
-  const updateInventoryQty = (id, val) => setInventory(inventory.map(i => i.id === id ? { ...i, quantity: val } : i));
-  const deleteInventory = (id) => setInventory(inventory.filter(i => i.id !== id));
-  const addWishlist = (e) => { e.preventDefault(); const fd = new FormData(e.target); setWishlist([...wishlist, {id: Date.now(), name: fd.get('name'), price: fd.get('price'), note: ''}]); e.target.reset(); };
-  const deleteWishlist = (id) => setWishlist(wishlist.filter(w => w.id !== id));
-  const addYGoal = (e) => { if(e.key==='Enter' && e.target.value.trim()){ const newGoal = {id: Date.now(), text: e.target.value, completed: false}; setGoalsByYear(prev => ({ ...prev, [selectedYear]: [...(prev[selectedYear] || []), newGoal] })); e.target.value=''; } };
-  const toggleYGoal = (id) => { setGoalsByYear(prev => ({ ...prev, [selectedYear]: prev[selectedYear].map(g => g.id === id ? { ...g, completed: !g.completed } : g) })); };
-  const deleteYGoal = (id) => { setGoalsByYear(prev => ({ ...prev, [selectedYear]: prev[selectedYear].filter(g => g.id !== id) })); };
-  const handlePhotoUpload = async (e, monthIndex) => { const file = e.target.files[0]; if(file) { try { const url = await compressImage(file); setMonthlyPhotos(prev => ({...prev, [`${selectedYear}-${monthIndex}`]: url})); } catch(err) { alert("Error"); } } };
-  const toggleLang = () => { if (lang === 'zh') setLang('jp'); else if (lang === 'jp') setLang('en'); else setLang('zh'); };
-  const addUrgentTodo = (e) => { if(e.key==='Enter' && e.target.value.trim()){ setUrgentTodos([...urgentTodos, {id: Date.now(), text: e.target.value, completed: false}]); e.target.value=''; }};
-  const toggleUrgent = (id) => setUrgentTodos(urgentTodos.map(t=>t.id===id?{...t,completed:!t.completed}:t));
-  const deleteUrgent = (id) => setUrgentTodos(urgentTodos.filter(t=>t.id!==id));
-  const setRateForMonth = (val) => { const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}`; setMonthlyRates(prev => ({ ...prev, [key]: parseFloat(val) })); };
-
-  // Init Effect
-  useEffect(() => {
-    try {
-      let savedData = localStorage.getItem(STORAGE_KEY);
-      const foundKeys = LEGACY_KEYS.filter(k => localStorage.getItem(k));
-      setFoundLegacyKeys(foundKeys);
-      if (!savedData && foundKeys.length > 0) savedData = localStorage.getItem(foundKeys[0]);
-      if (savedData) {
-        const parsed = JSON.parse(savedData);
-        if (parsed.fixedItemsByMonth) setFixedItemsByMonth(parsed.fixedItemsByMonth);
-        else if (parsed.fixedItems) {
-            const migrated = {};
-            for (let i = 0; i < 12; i++) migrated[`${new Date().getFullYear()}-${i}`] = parsed.fixedItems;
-            setFixedItemsByMonth(migrated);
-        }
-        if(parsed.allTodos) setAllTodos(parsed.allTodos);
-        if(parsed.allMeals) setAllMeals(parsed.allMeals);
-        if(parsed.transactions) setTransactions(parsed.transactions);
-        if(parsed.exchangeRate) setExchangeRate(parsed.exchangeRate);
-        if(parsed.monthlyRates) setMonthlyRates(parsed.monthlyRates);
-        if(parsed.inventory) setInventory(parsed.inventory);
-        if(parsed.wishlist) setWishlist(parsed.wishlist);
-        if(parsed.showBalance !== undefined) setShowBalance(parsed.showBalance);
-        if(parsed.lang) setLang(parsed.lang);
-        if(parsed.goalsByYear) setGoalsByYear(parsed.goalsByYear);
-        else if(parsed.yearlyGoals) setGoalsByYear({ [new Date().getFullYear()]: parsed.yearlyGoals }); 
-        if(parsed.yearlyReview) setYearlyReview(parsed.yearlyReview);
-        if(parsed.monthlyPhotos) setMonthlyPhotos(parsed.monthlyPhotos);
-        if(parsed.urgentTodos) setUrgentTodos(parsed.urgentTodos);
-      }
-      setQuote(DAILY_QUOTES[Math.floor(Math.random() * DAILY_QUOTES.length)]);
-    } catch (e) { console.error("Init error", e); }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ fixedItemsByMonth, allTodos, allMeals, transactions, exchangeRate, monthlyRates, inventory, wishlist, showBalance, lang, goalsByYear, yearlyReview, monthlyPhotos, urgentTodos }));
-  }, [fixedItemsByMonth, allTodos, allMeals, transactions, exchangeRate, monthlyRates, inventory, wishlist, showBalance, lang, goalsByYear, yearlyReview, monthlyPhotos, urgentTodos]);
-
+  
   const currentWeekStart = getMonday(currentDate);
   const currentWeekEnd = new Date(currentWeekStart);
   currentWeekEnd.setDate(currentWeekEnd.getDate() + 6);
@@ -346,6 +308,73 @@ export default function App() {
   const completedYearGoals = currentYearGoals.filter(g => g.completed);
   const activeUrgentTodos = urgentTodos.filter(t => !t.completed);
   const completedUrgentTodos = urgentTodos.filter(t => t.completed);
+
+  // Actions
+  const changeWeek = (offset) => { const d = new Date(currentDate); d.setDate(d.getDate() + offset * 7); setCurrentDate(d); };
+  const handleMonthClick = (idx) => { const today = new Date(); if (today.getFullYear() === selectedYear && today.getMonth() === idx) setCurrentDate(today); else setCurrentDate(new Date(selectedYear, idx, 1)); setView('week'); };
+  const handleAddTodo = (e) => { if(e.key === 'Enter' && e.target.value.trim()) { setAllTodos({...allTodos, [getWeekId(currentWeekStart)]: [...(allTodos[getWeekId(currentWeekStart)]||[]), { id: Date.now(), text: e.target.value, completed: false }]}); e.target.value = ''; } };
+  const toggleTodo = (id) => setAllTodos({...allTodos, [getWeekId(currentWeekStart)]: (allTodos[getWeekId(currentWeekStart)]||[]).map(t=>t.id===id?{...t,completed:!t.completed}:t)});
+  const deleteTodo = (id) => setAllTodos({...allTodos, [getWeekId(currentWeekStart)]: (allTodos[getWeekId(currentWeekStart)]||[]).filter(t=>t.id!==id)});
+  const updateMeal = (d, type, v) => setAllMeals({...allMeals, [getWeekId(currentWeekStart)]: {...(allMeals[getWeekId(currentWeekStart)]||{ Mon: {b:'',l:'',d:''}, Tue: {b:'',l:'',d:''}, Wed: {b:'',l:'',d:''}, Thu: {b:'',l:'',d:''}, Fri: {b:'',l:'',d:''}, Sat: {b:'',l:'',d:''}, Sun: {b:'',l:'',d:''} }), [d]: {...(allMeals[getWeekId(currentWeekStart)]?.[d]||{b:'',l:'',d:''}), [type]: v}}});
+  const addTransaction = (e) => { e.preventDefault(); const fd = new FormData(e.target); const dateVal = recordDate || formatDateISO(new Date()); setTransactions([{id: Date.now(), date: dateVal, name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency')}, ...transactions]); e.target.reset(); setRecordDate(dateVal); };
+  const deleteTransaction = (id) => setTransactions(transactions.filter(t => t.id !== id));
+  const addFixedItem = (e) => { e.preventDefault(); const fd = new FormData(e.target); const newItem = {id: Date.now(), name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency'), type: fd.get('type')}; addFixedItemForMonth(currentDate.getFullYear(), currentDate.getMonth(), newItem); e.target.reset(); };
+  const addInventory = (e) => { if(e.key==='Enter'){ setInventory([...inventory, {id: Date.now(), name: e.target.value, quantity: ''}]); e.target.value=''; } };
+  const updateInventoryQty = (id, val) => setInventory(inventory.map(i => i.id === id ? { ...i, quantity: val } : i));
+  const deleteInventory = (id) => setInventory(inventory.filter(i => i.id !== id));
+  const addWishlist = (e) => { e.preventDefault(); const fd = new FormData(e.target); setWishlist([...wishlist, {id: Date.now(), name: fd.get('name'), price: fd.get('price'), note: ''}]); e.target.reset(); };
+  const deleteWishlist = (id) => setWishlist(wishlist.filter(w => w.id !== id));
+  const addYGoal = (e) => { if(e.key==='Enter' && e.target.value.trim()){ const newGoal = {id: Date.now(), text: e.target.value, completed: false}; setGoalsByYear(prev => ({ ...prev, [selectedYear]: [...(prev[selectedYear] || []), newGoal] })); e.target.value=''; } };
+  const toggleYGoal = (id) => { setGoalsByYear(prev => ({ ...prev, [selectedYear]: prev[selectedYear].map(g => g.id === id ? { ...g, completed: !g.completed } : g) })); };
+  const deleteYGoal = (id) => { setGoalsByYear(prev => ({ ...prev, [selectedYear]: prev[selectedYear].filter(g => g.id !== id) })); };
+  const handlePhotoUpload = async (e, monthIndex) => { const file = e.target.files[0]; if(file) { try { const url = await compressImage(file); setMonthlyPhotos(prev => ({...prev, [`${selectedYear}-${monthIndex}`]: url})); } catch(err) { alert("Error"); } } };
+  const toggleLang = () => { if (lang === 'zh') setLang('jp'); else if (lang === 'jp') setLang('en'); else setLang('zh'); };
+  const addUrgentTodo = (e) => { if(e.key==='Enter' && e.target.value.trim()){ setUrgentTodos([...urgentTodos, {id: Date.now(), text: e.target.value, completed: false}]); e.target.value=''; }};
+  const toggleUrgent = (id) => setUrgentTodos(urgentTodos.map(t=>t.id===id?{...t,completed:!t.completed}:t));
+  const deleteUrgent = (id) => setUrgentTodos(urgentTodos.filter(t=>t.id!==id));
+  const setRateForMonth = (val) => { const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}`; setMonthlyRates(prev => ({ ...prev, [key]: parseFloat(val) })); };
+
+  // 初始化 + 搜救 (放在函数定义之后)
+  useEffect(() => {
+    try {
+      let savedData = localStorage.getItem(STORAGE_KEY);
+      const foundKeys = LEGACY_KEYS.filter(k => localStorage.getItem(k));
+      setFoundLegacyKeys(foundKeys);
+
+      if (!savedData && foundKeys.length > 0) {
+         savedData = localStorage.getItem(foundKeys[0]);
+      }
+
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        if (parsed.fixedItemsByMonth) setFixedItemsByMonth(parsed.fixedItemsByMonth);
+        else if (parsed.fixedItems) {
+            const migrated = {};
+            for (let i = 0; i < 12; i++) migrated[`${new Date().getFullYear()}-${i}`] = parsed.fixedItems;
+            setFixedItemsByMonth(migrated);
+        }
+        if(parsed.allTodos) setAllTodos(parsed.allTodos);
+        if(parsed.allMeals) setAllMeals(parsed.allMeals);
+        if(parsed.transactions) setTransactions(parsed.transactions);
+        if(parsed.exchangeRate) setExchangeRate(parsed.exchangeRate);
+        if(parsed.monthlyRates) setMonthlyRates(parsed.monthlyRates);
+        if(parsed.inventory) setInventory(parsed.inventory);
+        if(parsed.wishlist) setWishlist(parsed.wishlist);
+        if(parsed.showBalance !== undefined) setShowBalance(parsed.showBalance);
+        if(parsed.lang) setLang(parsed.lang);
+        if(parsed.goalsByYear) setGoalsByYear(parsed.goalsByYear);
+        else if(parsed.yearlyGoals) setGoalsByYear({ [new Date().getFullYear()]: parsed.yearlyGoals }); 
+        if(parsed.yearlyReview) setYearlyReview(parsed.yearlyReview);
+        if(parsed.monthlyPhotos) setMonthlyPhotos(parsed.monthlyPhotos);
+        if(parsed.urgentTodos) setUrgentTodos(parsed.urgentTodos);
+      }
+      setQuote(DAILY_QUOTES[Math.floor(Math.random() * DAILY_QUOTES.length)]);
+    } catch (e) { console.error("Init error", e); }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ fixedItemsByMonth, allTodos, allMeals, transactions, exchangeRate, monthlyRates, inventory, wishlist, showBalance, lang, goalsByYear, yearlyReview, monthlyPhotos, urgentTodos }));
+  }, [fixedItemsByMonth, allTodos, allMeals, transactions, exchangeRate, monthlyRates, inventory, wishlist, showBalance, lang, goalsByYear, yearlyReview, monthlyPhotos, urgentTodos]);
 
   // --- Views ---
 
@@ -622,7 +651,187 @@ export default function App() {
          </div>
       </div>
       <ImageModal src={previewImage} onClose={() => setPreviewImage(null)} />
-      <RestoreModal isOpen={restoreModalOpen} onClose={() => setRestoreModalOpen(false)} onRestore={handleManualRestore} onFileUpload={handleFileImport} keys={foundLegacyKeys} t={t} />
+      <RestoreModal isOpen={restoreModalOpen} onClose={() => setRestoreModalOpen(false)} onRestore={handleManualRestoreWrapper} onFileUpload={handleFileImport} keys={foundLegacyKeys} t={t} />
     </AppWrapper>
   );
+
+  function handleManualRestoreWrapper(key) {
+    handleManualRestore(key);
+  }
+
+  // 4. Week View
+  return (
+    <AppWrapper>
+      <div className="bg-[#f2e6ce] sticky top-0 z-50 shadow-sm border-b border-[#e6dcc0]">
+        <div className="max-w-3xl mx-auto px-4 py-3">
+          <button onClick={() => setView('year')} className="flex items-center gap-1 text-[#8c7b6d] text-sm font-bold hover:text-[#5c524b] mb-2 transition-colors"><HomeIcon size={16}/> {t.backHome}</button>
+          
+          {/* 月度汇率设置 */}
+          <div className="flex items-center justify-between bg-white/60 p-2 rounded-2xl border border-[#efeadd] mb-2">
+             <div className="flex items-center gap-2 text-xs text-[#8c7b6d] font-bold px-2">
+               {t.monthRate}
+               <input 
+                  type="number" 
+                  value={weekStats.thisMonthRate} 
+                  onChange={(e) => setRateForMonth(e.target.value)}
+                  placeholder={exchangeRate}
+                  className="w-12 bg-transparent border-b border-[#e6b422] text-center text-[#e6b422] focus:outline-none"
+               />
+             </div>
+          </div>
+
+          <div className="flex justify-between items-center bg-white/60 p-2 rounded-2xl border border-[#efeadd]">
+            <button onClick={() => changeWeek(-1)} className="p-2 hover:bg-[#e4d4b2] rounded-full transition-colors"><ChevronLeftIcon size={20}/></button>
+            <div className="text-center"><div className="text-[10px] font-bold text-[#b09f8d] uppercase tracking-wider mb-0.5">{t.weekView}</div><div className="flex items-center gap-2 text-lg font-black text-[#6d5e50]"><span className="text-[#e6b422]"><CalendarIcon size={18}/></span>{formatDateShort(currentWeekStart)} - {formatDateShort(currentWeekEnd)}</div></div>
+            <button onClick={() => changeWeek(1)} className="p-2 hover:bg-[#e4d4b2] rounded-full transition-colors"><ChevronRightIcon size={20}/></button>
+          </div>
+        </div>
+      </div>
+
+      <div className="px-4 mt-4 space-y-6 pb-20">
+        <div className="flex flex-col gap-4">
+           <div className="bg-white rounded-3xl p-5 border-2 border-[#efeadd] shadow-sm">
+              <div className="text-[#8c7b6d] text-sm font-bold mb-1">{t.weeklyTotal}</div>
+              <div className="text-2xl font-black text-[#e6b422] font-mono tracking-tight">{formatMoneySimple(weekStats.weeklyDailyTotalJPY)}</div>
+              {/* 明细卡片：始终显示两种币种的原始数值 */}
+              <div className="mt-2 pt-2 border-t border-dashed border-[#efeadd] flex flex-col gap-0.5 text-xs text-[#b09f8d] font-mono">
+                 <div className="flex justify-between"><span>JPY:</span><span>¥{weekStats.jpyTotal.toLocaleString()}</span></div>
+                 <div className="flex justify-between"><span>CNY:</span><span>¥{weekStats.rmbTotal.toLocaleString()} (≈ ¥{Math.round(weekStats.rmbTotal * weekStats.thisMonthRate)})</span></div>
+              </div>
+           </div>
+           
+           <div className="bg-[#fffbf0] rounded-3xl p-5 border-2 border-[#efeadd] shadow-sm">
+              <div className="flex justify-between items-center mb-2"><div className="text-[#8c7b6d] text-sm font-bold">{t.fixedMonthly}</div><div className="text-xs text-[#b09f8d] bg-[#efeadd]/50 px-2 py-1 rounded">{t.fixedType}</div></div>
+              <div className="flex gap-8">
+                <div className="flex flex-col"><span className="text-xs text-[#b09f8d] flex items-center gap-1"><TrendingDownIcon size={10}/> {t.fixedExp}</span><span className="text-lg font-bold font-mono text-[#e07a5f]">{formatMoneySimple(weekStats.fixedExpense)}</span></div>
+                {showBalance && weekStats.fixedIncome > 0 && <div className="flex flex-col"><span className="text-xs text-[#b09f8d] flex items-center gap-1"><TrendingUpIcon size={10}/> {t.income}</span><span className="text-lg font-bold font-mono text-[#7ca982]">{formatMoneySimple(weekStats.fixedIncome)}</span></div>}
+              </div>
+           </div>
+        </div>
+        
+        <div className="flex flex-col gap-6">
+          <Card title={t.weekGoal} icon={<CheckSquareIcon size={18}/>} className="min-h-[200px]">
+            <div className="space-y-3">
+              {currentTodos.map(todo => (
+                <div key={todo.id} className="group flex items-start gap-3 bg-[#fdfcf8] p-2 rounded-xl transition-all hover:bg-white border border-transparent hover:border-[#efeadd]">
+                  <input type="checkbox" checked={todo.completed} onChange={() => toggleTodo(todo.id)} className="mt-1 accent-[#e6b422]" />
+                  <span className={`flex-1 text-sm ${todo.completed ? 'text-[#b09f8d] line-through' : 'text-[#5c524b]'}`}>{todo.text}</span>
+                  <button onClick={() => deleteTodo(todo.id)} className="text-[#dccab0] hover:text-[#e07a5f]"><Trash2Icon size={16}/></button>
+                </div>
+              ))}
+              <div className="relative mt-2"><div className="absolute left-3 top-3 text-[#dccab0]"><PlusIcon size={16}/></div><input placeholder={t.addGoal} onKeyDown={handleAddTodo} className="w-full pl-9 pr-4 py-2.5 bg-[#fdfcf8] border-2 border-efeadd] rounded-xl text-sm focus:outline-none focus:border-[#e6b422]" /></div>
+            </div>
+          </Card>
+          
+          <Card title={t.record} icon={<ReceiptIcon size={18}/>}>
+            <form onSubmit={addTransaction} className="space-y-3">
+              {/* Row 1: Date & Currency */}
+              <div className="flex gap-2">
+                <div className="relative w-1/2">
+                   <input 
+                      type="date" 
+                      name="date"
+                      defaultValue={formatDateISO(currentDate)}
+                      onChange={(e) => setRecordDate(e.target.value)}
+                      className="absolute inset-0 opacity-0 cursor-pointer z-10 w-full"
+                   />
+                   <div className="w-full p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm text-[#e6b422] font-mono font-bold text-center flex items-center justify-between cursor-pointer h-[46px]">
+                     <span>{formatDateTiny(recordDate)}</span>
+                     <CalendarIcon size={14} className="text-[#dccab0]"/>
+                   </div>
+                </div>
+                <select name="currency" className="w-1/2 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none px-2 text-center text-[#5c524b] font-bold h-[46px]"><option value="JPY">JPY</option><option value="RMB">RMB</option></select>
+              </div>
+
+              {/* Row 2: Name & Amount */}
+              <div className="flex gap-2">
+                <input name="name" placeholder={t.itemName} required className="w-[60%] p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none h-[46px]" />
+                <input name="amount" type="number" step="0.01" placeholder={t.amount} required className="w-[40%] p-3 bg-white border-2 border-[#efeadd] rounded-xl text-sm outline-none h-[46px]" />
+              </div>
+
+              <button type="submit" className="w-full py-3 bg-[#e6b422] text-white font-bold rounded-xl shadow-md hover:bg-[#d4a51e] flex justify-center items-center gap-2 h-[46px]"><PlusIcon size={18}/> {t.recordBtn}</button>
+            </form>
+          </Card>
+          
+          <div className="bg-white rounded-3xl border-2 border-[#efeadd] p-4">
+            <h3 className="text-[#8c7b6d] font-bold text-sm mb-3 pl-1 flex items-center gap-2"><LayoutIcon size={16}/> {t.details}</h3>
+            <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar">
+              {currentTransactions.map(tr => (
+                <div key={tr.id} className="flex justify-between items-center p-3 rounded-xl bg-[#fdfcf8] border border-[#f7f3e8]">
+                  <div className="flex flex-col"><span className="text-sm font-bold text-[#5c524b]">{tr.name}</span><span className="text-[10px] text-[#b09f8d]">{formatDateTiny(tr.date)}</span></div>
+                  <div className="flex items-center gap-2">
+                     <div className="text-right">
+                        <div className="font-mono font-bold text-[#6d5e50] text-base">
+                          {tr.currency === 'JPY' ? `¥${tr.amount}` : `¥${tr.amount} (RMB)`}
+                        </div>
+                        {tr.currency === 'RMB' && <div className="text-[10px] text-[#b09f8d]">≈ ¥{Math.round(tr.amount * weekStats.thisMonthRate)}</div>}
+                     </div>
+                     <button onClick={() => deleteTransaction(tr.id)} className="text-[#f9e79f] hover:text-[#e07a5f] p-1"><Trash2Icon size={14}/></button>
+                  </div>
+                </div>
+              ))}
+              {currentTransactions.length === 0 && <div className="text-center py-8 text-[#dccab0] text-sm">{t.noDetails}</div>}
+            </div>
+          </div>
+        </div>
+        
+        <Card title={t.mealPlan} icon={<UtensilsIcon size={18}/>}>
+          <div className="space-y-3">
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
+              <div key={day} className="bg-white rounded-xl p-3 border border-[#efeadd] shadow-sm">
+                <div className="flex items-center gap-2 mb-2"><span className="text-xs font-bold text-white bg-[#e07a5f] px-2 py-0.5 rounded-full">{[t.month, 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]}</span></div>
+                <div className="grid grid-cols-3 gap-2">
+                  {['b', 'l', 'd'].map((type) => (
+                    <div key={type} className="relative group">
+                      <input value={currentMeals[day][type]} onChange={(e) => updateMeal(day, type, e.target.value)} placeholder={type==='b'?'早':type==='l'?'午':'晚'} className="w-full text-xs p-2 bg-[#fdfcf8] rounded-lg border border-transparent hover:border-[#dccab0] focus:border-[#e6b422] focus:bg-white outline-none text-center" />
+                      <div className="absolute right-1 top-1.5 opacity-20 pointer-events-none">{type==='b'?<CoffeeIcon size={10}/>:type==='l'?<SunIcon size={10}/>:<MoonIcon size={10}/>}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+        
+        <Card title={t.addFixed} icon={<WalletIcon size={18}/>}>
+          <div className="space-y-2 mb-4">
+            {getFixedItemsForMonth(currentDate.getFullYear(), currentDate.getMonth()).map(item => (
+              <div key={item.id} className="flex justify-between items-center text-sm p-2 bg-white rounded-lg border border-[#f7f3e8]">
+                <span className="text-[#5c524b]">{item.name}</span>
+                <div className="flex items-center gap-2">
+                   <input 
+                      type="number" 
+                      value={item.amount}
+                      onChange={(e) => updateFixedItemForMonth(currentDate.getFullYear(), currentDate.getMonth(), item.id, 'amount', e.target.value)}
+                      className="w-16 text-right font-mono font-bold text-[#e07a5f] bg-transparent border-b border-dashed border-[#e6dcc0] focus:border-[#e6b422] outline-none"
+                   />
+                   <span className="text-[10px] text-[#b09f8d]">{item.currency}</span>
+                   <button onClick={() => deleteFixedItemForMonth(currentDate.getFullYear(), currentDate.getMonth(), item.id)} className="text-[#dccab0] hover:text-[#e07a5f]"><Trash2Icon size={12}/></button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <form onSubmit={(e) => {
+              e.preventDefault();
+              const fd = new FormData(e.target);
+              const newItem = {id: Date.now(), name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency'), type: fd.get('type')};
+              addFixedItemForMonth(currentDate.getFullYear(), currentDate.getMonth(), newItem);
+              e.target.reset();
+          }} className="grid grid-cols-4 gap-2">
+             <input name="name" placeholder={t.itemName} required className="col-span-4 p-2 bg-white border border-[#efeadd] rounded-lg text-xs outline-none" />
+             <input name="amount" type="number" placeholder="金额" required className="col-span-2 p-2 bg-white border border-[#efeadd] rounded-lg text-xs outline-none" />
+             <select name="currency" className="col-span-1 p-2 bg-white border border-[#efeadd] rounded-lg text-xs outline-none"><option value="JPY">JPY</option><option value="RMB">RMB</option></select>
+             <select name="type" className="col-span-1 p-2 bg-white border border-[#efeadd] rounded-lg text-xs outline-none"><option value="expense">{t.expense}</option><option value="income">{t.income}</option></select>
+             <button className="col-span-4 p-2 bg-[#8c7b6d] text-white text-xs rounded-lg hover:bg-[#6d5e50] font-bold">{t.addFixed}</button>
+          </form>
+        </Card>
+      </div>
+      <ImageModal src={previewImage} onClose={() => setPreviewImage(null)} />
+      <RestoreModal isOpen={restoreModalOpen} onClose={() => setRestoreModalOpen(false)} onRestore={handleManualRestoreWrapper} onFileUpload={handleFileImport} keys={foundLegacyKeys} t={t} />
+    </AppWrapper>
+  );
+
+  function handleManualRestoreWrapper(key) {
+    handleManualRestore(key);
+  }
 }

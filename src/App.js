@@ -43,6 +43,7 @@ const RefreshIcon = (p) => <IconWrapper {...p}><polyline points="23 4 23 10 17 1
 const XIcon = (p) => <IconWrapper {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></IconWrapper>;
 const ArchiveRestoreIcon = (p) => <IconWrapper {...p}><rect width="20" height="20" x="2" y="2" rx="2"/><path d="M12 12v6"/><path d="m15 15-3 3-3-3"/><path d="M4 8h16"/><path d="M4 16h6"/></IconWrapper>;
 const UploadCloudIcon = (p) => <IconWrapper {...p}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></IconWrapper>;
+const SettingsIcon = (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></IconWrapper>;
 
 const AppWrapper = ({ children }) => (
   <div className="flex justify-center min-h-screen bg-gray-100 font-sans">
@@ -66,6 +67,58 @@ const Card = ({ children, className = "", title, icon, action, onClick }) => (
     {children}
   </div>
 );
+
+// 新增：固定支出编辑弹窗
+const FixedItemsModal = ({ isOpen, onClose, items, onAdd, onUpdate, onDelete, t, year, month }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[999] bg-black/50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl p-4 w-full max-w-sm shadow-xl max-h-[80vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold text-[#6d5e50] flex items-center gap-2"><WalletIcon className="text-[#e6b422]"/> {month+1}月 {t.fixedMonthly}</h3>
+          <button onClick={onClose}><XIcon size={20} className="text-[#8c7b6d]"/></button>
+        </div>
+        
+        <div className="space-y-3 mb-6">
+          {items.map(item => (
+            <div key={item.id} className="flex justify-between items-center text-sm p-3 bg-[#fdfcf8] rounded-xl border border-[#efeadd]">
+              <input 
+                 value={item.name} 
+                 onChange={(e) => onUpdate(item.id, 'name', e.target.value)}
+                 className="w-24 bg-transparent outline-none font-bold text-[#5c524b]" 
+              />
+              <div className="flex items-center gap-2">
+                 <input 
+                    type="number" 
+                    value={item.amount}
+                    onChange={(e) => onUpdate(item.id, 'amount', e.target.value)}
+                    className="w-16 text-right font-mono font-bold text-[#e07a5f] bg-transparent border-b border-dashed border-[#e6dcc0] focus:border-[#e6b422] outline-none"
+                 />
+                 <select 
+                   value={item.currency} 
+                   onChange={(e) => onUpdate(item.id, 'currency', e.target.value)}
+                   className="text-[10px] bg-transparent outline-none text-[#b09f8d]"
+                 >
+                   <option value="JPY">JPY</option>
+                   <option value="RMB">RMB</option>
+                 </select>
+                 <button onClick={() => onDelete(item.id)} className="text-[#dccab0] hover:text-[#e07a5f] ml-1"><Trash2Icon size={14}/></button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <form onSubmit={onAdd} className="grid grid-cols-4 gap-2 border-t border-dashed border-[#efeadd] pt-4">
+           <input name="name" placeholder={t.itemName} required className="col-span-4 p-2.5 bg-[#fdfcf8] border border-[#efeadd] rounded-xl text-xs outline-none focus:border-[#e6b422]" />
+           <input name="amount" type="number" placeholder="金额" required className="col-span-2 p-2.5 bg-[#fdfcf8] border border-[#efeadd] rounded-xl text-xs outline-none focus:border-[#e6b422]" />
+           <select name="currency" className="col-span-1 p-2.5 bg-[#fdfcf8] border border-[#efeadd] rounded-xl text-xs outline-none"><option value="JPY">JPY</option><option value="RMB">RMB</option></select>
+           <select name="type" className="col-span-1 p-2.5 bg-[#fdfcf8] border border-[#efeadd] rounded-xl text-xs outline-none"><option value="expense">{t.expense}</option><option value="income">{t.income}</option></select>
+           <button className="col-span-4 p-3 bg-[#e6b422] text-white text-sm rounded-xl hover:bg-[#d4a51e] font-bold shadow-md flex items-center justify-center gap-2"><PlusIcon size={16}/> {t.addFixed}</button>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 const ImageModal = ({ src, onClose }) => {
   if (!src) return null;
@@ -113,9 +166,9 @@ const RestoreModal = ({ isOpen, onClose, onRestore, onFileUpload, keys, t }) => 
 const DAILY_QUOTES = ["把钱花在刀刃上。", "好好吃饭，好好生活。", "今天的克制，是为了明天的自由。", "不积跬步，无以至千里。", "生活原本沉闷，但跑起来就有风。", "物尽其用，就是最大的惜福。", "每一笔支出，都是在为想要的生活投票。", "快乐不一定要很贵。"];
 
 const TRANSLATIONS = {
-  zh: { appTitle: "生活账本", backHome: "返回", totalExpense: "年度支出 (预估)", totalBalance: "年度结余 (预估)", exchangeRate: "汇率 (1 RMB)", supplies: "生活补给", inventory: "冰箱", wishlist: "心愿", inventoryPlaceholder: "余粮...", wishlistPlaceholder: "想买...", qty: "剩?", clickToManage: "点击管理", fixedExp: "固定", income: "收入", dailyExp: "日常", monthly: "月", month: "月", weekView: "周视图", weekGoal: "本周目标", addGoal: "添加任务...", record: "记一笔", recordBtn: "记账", itemName: "项目名称", date: "日期", amount: "金额", mealPlan: "食谱", fixedMonthly: "固定收支", fixedType: "每月", addFixed: "添加固定项", expense: "支出", details: "明细", noDetails: "暂无记录", yearlyGoalsTitle: "年度目标", myGoals: "我的目标", addYearlyGoal: "立 Flag...", yearReview: "小结", reviewPlaceholder: "写点什么...", topPurchases: "高光消费 (Top 5)", topPurchasesSub: "钱花哪了", modeExpenditure: "支出模式", modeBalance: "收支模式", photoGallery: "年度回忆", photoGallerySub: "每月一张 (点击大图)", uploadPhoto: "上传", urgentMemo: "紧急待办", addUrgent: "加急事...", switchCurrency: "切换显示", actualBreakdown: "实际构成", weeklyTotal: "本周合计 (JPY)", breakdown: "构成", monthRate: "本月汇率 (1RMB=)", restoreData: "恢复数据", restoreTitle: "数据恢复中心", restoreDesc: "检测到本地有历史备份", cancel: "取消", restoreSuccess: "恢复成功！", importFile: "从文件导入 (.json)", importSuccess: "文件导入成功！" },
-  jp: { appTitle: "生活家計簿", backHome: "戻る", totalExpense: "年間支出 (予想)", totalBalance: "年間収支 (予想)", exchangeRate: "レート(1RMB)", supplies: "生活用品", inventory: "冷蔵庫", wishlist: "心願", inventoryPlaceholder: "在庫...", wishlistPlaceholder: "欲しい...", qty: "残?", clickToManage: "管理する", fixedExp: "固定費", income: "収入", dailyExp: "生活費", monthly: "月", month: "月", weekView: "週間", weekGoal: "今週の目標", addGoal: "タスク...", record: "記帳", recordBtn: "保存", itemName: "項目名", date: "日付", amount: "金額", mealPlan: "献立", fixedMonthly: "固定収支", fixedType: "毎月", addFixed: "固定費追加", expense: "支出", details: "明細", noDetails: "記録なし", yearlyGoalsTitle: "年間目標", myGoals: "今年の目標", addYearlyGoal: "目標追加...", yearReview: "年間レビュー", reviewPlaceholder: "一言...", topPurchases: "高額出費", topPurchasesSub: "何買った?", modeExpenditure: "支出のみ", modeBalance: "収支管理", photoGallery: "年間写真", photoGallerySub: "毎月の記録", uploadPhoto: "写真", urgentMemo: "緊急メモ", addUrgent: "急用...", switchCurrency: "通貨切替", actualBreakdown: "実数内訳", weeklyTotal: "今週合計 (JPY)", breakdown: "内訳", monthRate: "今月レート", restoreData: "復元", restoreTitle: "データ復元", restoreDesc: "履歴データが見つかりました", cancel: "キャンセル", restoreSuccess: "復元完了！", importFile: "ファイルから復元 (.json)", importSuccess: "インポート成功！" },
-  en: { appTitle: "Life Ledger", backHome: "Back", totalExpense: "Total Exp (Est.)", totalBalance: "Total Bal (Est.)", exchangeRate: "Rate(1RMB)", supplies: "Supplies", inventory: "Pantry", wishlist: "Wishlist", inventoryPlaceholder: "Add...", wishlistPlaceholder: "Item...", qty: "Qty", clickToManage: "Manage", fixedExp: "Fixed", income: "Income", dailyExp: "Daily", monthly: "Month", month: "Mon", weekView: "Week", weekGoal: "Goals", addGoal: "Task...", record: "Add", recordBtn: "Save", itemName: "Item", date: "Date", amount: "Amt", mealPlan: "Meals", fixedMonthly: "Monthly Fixed", fixedType: "Recurring", addFixed: "Add Fixed", expense: "Exp", details: "Details", noDetails: "Empty", yearlyGoalsTitle: "Yearly", myGoals: "Goals", addYearlyGoal: "Add...", yearReview: "Review", reviewPlaceholder: "Notes...", topPurchases: "Top 5", topPurchasesSub: "Spending", modeExpenditure: "Exp Only", modeBalance: "Balance", photoGallery: "Gallery", photoGallerySub: "Monthly pic", uploadPhoto: "Upload", urgentMemo: "Urgent", addUrgent: "Urgent...", switchCurrency: "Switch", actualBreakdown: "Actual Breakdown", weeklyTotal: "Weekly Total (JPY)", breakdown: "Breakdown", monthRate: "Month Rate", restoreData: "Restore", restoreTitle: "Data Recovery", restoreDesc: "Found legacy data", cancel: "Cancel", restoreSuccess: "Restored!", importFile: "Import from file (.json)", importSuccess: "Imported Successfully!" }
+  zh: { appTitle: "生活账本", backHome: "返回", totalExpense: "年度支出 (预估)", totalBalance: "年度结余 (预估)", exchangeRate: "汇率 (1 RMB)", supplies: "生活补给", inventory: "冰箱", wishlist: "心愿", inventoryPlaceholder: "余粮...", wishlistPlaceholder: "想买...", qty: "剩?", clickToManage: "点击管理", fixedExp: "固定", income: "收入", dailyExp: "日常", monthly: "月", month: "月", weekView: "周视图", weekGoal: "本周目标", addGoal: "添加任务...", record: "记一笔", recordBtn: "记账", itemName: "项目名称", date: "日期", amount: "金额", mealPlan: "食谱", fixedMonthly: "固定收支", fixedType: "每月", addFixed: "添加", expense: "支出", details: "明细", noDetails: "暂无记录", yearlyGoalsTitle: "年度目标", myGoals: "我的目标", addYearlyGoal: "立 Flag...", yearReview: "小结", reviewPlaceholder: "写点什么...", topPurchases: "高光消费 (Top 5)", topPurchasesSub: "钱花哪了", modeExpenditure: "支出模式", modeBalance: "收支模式", photoGallery: "年度回忆", photoGallerySub: "每月一张 (点击大图)", uploadPhoto: "上传", urgentMemo: "紧急待办", addUrgent: "加急事...", switchCurrency: "切换显示", actualBreakdown: "实际构成", weeklyTotal: "本周合计 (JPY)", breakdown: "构成", monthRate: "本月汇率 (1RMB=)", restoreData: "恢复数据", restoreTitle: "数据恢复中心", restoreDesc: "检测到本地有历史备份", cancel: "取消", restoreSuccess: "恢复成功！", importFile: "从文件导入 (.json)", importSuccess: "文件导入成功！", dailyBreakdown: "每日消费" },
+  jp: { appTitle: "生活家計簿", backHome: "戻る", totalExpense: "年間支出 (予想)", totalBalance: "年間収支 (予想)", exchangeRate: "レート(1RMB)", supplies: "生活用品", inventory: "冷蔵庫", wishlist: "心願", inventoryPlaceholder: "在庫...", wishlistPlaceholder: "欲しい...", qty: "残?", clickToManage: "管理する", fixedExp: "固定費", income: "収入", dailyExp: "生活費", monthly: "月", month: "月", weekView: "週間", weekGoal: "今週の目標", addGoal: "タスク...", record: "記帳", recordBtn: "保存", itemName: "項目名", date: "日付", amount: "金額", mealPlan: "献立", fixedMonthly: "固定収支", fixedType: "毎月", addFixed: "追加", expense: "支出", details: "明細", noDetails: "記録なし", yearlyGoalsTitle: "年間目標", myGoals: "今年の目標", addYearlyGoal: "目標追加...", yearReview: "年間レビュー", reviewPlaceholder: "一言...", topPurchases: "高額出費", topPurchasesSub: "何買った?", modeExpenditure: "支出のみ", modeBalance: "収支管理", photoGallery: "年間写真", photoGallerySub: "毎月の記録", uploadPhoto: "写真", urgentMemo: "緊急メモ", addUrgent: "急用...", switchCurrency: "通貨切替", actualBreakdown: "実数内訳", weeklyTotal: "今週合計 (JPY)", breakdown: "内訳", monthRate: "今月レート", restoreData: "復元", restoreTitle: "データ復元", restoreDesc: "履歴データが見つかりました", cancel: "キャンセル", restoreSuccess: "復元完了！", importFile: "ファイルから復元 (.json)", importSuccess: "インポート成功！", dailyBreakdown: "日別消費" },
+  en: { appTitle: "Life Ledger", backHome: "Back", totalExpense: "Total Exp (Est.)", totalBalance: "Total Bal (Est.)", exchangeRate: "Rate(1RMB)", supplies: "Supplies", inventory: "Pantry", wishlist: "Wishlist", inventoryPlaceholder: "Add...", wishlistPlaceholder: "Item...", qty: "Qty", clickToManage: "Manage", fixedExp: "Fixed", income: "Income", dailyExp: "Daily", monthly: "Month", month: "Mon", weekView: "Week", weekGoal: "Goals", addGoal: "Task...", record: "Add", recordBtn: "Save", itemName: "Item", date: "Date", amount: "Amt", mealPlan: "Meals", fixedMonthly: "Monthly Fixed", fixedType: "Recurring", addFixed: "Add", expense: "Exp", details: "Details", noDetails: "Empty", yearlyGoalsTitle: "Yearly", myGoals: "Goals", addYearlyGoal: "Add...", yearReview: "Review", reviewPlaceholder: "Notes...", topPurchases: "Top 5", topPurchasesSub: "Spending", modeExpenditure: "Exp Only", modeBalance: "Balance", photoGallery: "Gallery", photoGallerySub: "Monthly pic", uploadPhoto: "Upload", urgentMemo: "Urgent", addUrgent: "Urgent...", switchCurrency: "Switch", actualBreakdown: "Actual Breakdown", weeklyTotal: "Weekly Total (JPY)", breakdown: "Breakdown", monthRate: "Month Rate", restoreData: "Restore", restoreTitle: "Data Recovery", restoreDesc: "Found legacy data", cancel: "Cancel", restoreSuccess: "Restored!", importFile: "Import from file (.json)", importSuccess: "Imported Successfully!", dailyBreakdown: "Daily Breakdown" }
 };
 
 const getMonday = (d) => { const day = d.getDay(); const diff = d.getDate() - day + (day === 0 ? -6 : 1); const monday = new Date(d.setDate(diff)); monday.setHours(0, 0, 0, 0); return monday; };
@@ -123,7 +176,7 @@ const getWeekId = (date) => { const d = new Date(date); d.setHours(0, 0, 0, 0); 
 const formatDateShort = (date) => `${date.getMonth() + 1}.${date.getDate()}`;
 const formatDateISO = (date) => { const offset = date.getTimezoneOffset(); date = new Date(date.getTime() - (offset*60*1000)); return date.toISOString().split('T')[0]; };
 const formatDateTiny = (isoString) => { if (!isoString) return "--.--"; const d = new Date(isoString); const yy = d.getFullYear().toString().slice(-2); const mm = String(d.getMonth() + 1).padStart(2, '0'); const dd = String(d.getDate()).padStart(2, '0'); return `${yy}.${mm}.${dd}`; };
-const compressImage = (file) => { return new Promise((resolve) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); let w = img.width, h = img.height; if(w > 800) { h *= 800/w; w=800; } canvas.width = w; canvas.height = h; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h); resolve(canvas.toDataURL('image/jpeg', 0.8)); } }; }); };
+const compressImage = (file) => { return new Promise((resolve) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); let w = img.width, h = img.height; if(w > 800) { h *= 800/w; w=800; } canvas.width = w; canvas.height = h; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h); resolve(canvas.toDataURL('image/jpeg', 0.8)); }; }; }); };
 
 // --- 5. 主应用逻辑 ---
 export default function App() {
@@ -140,6 +193,7 @@ export default function App() {
   const [previewImage, setPreviewImage] = useState(null); 
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const [foundLegacyKeys, setFoundLegacyKeys] = useState([]);
+  const [fixedModalOpen, setFixedModalOpen] = useState(false); // 新增状态：控制固定支出弹窗
 
   // 状态
   const [fixedItemsByMonth, setFixedItemsByMonth] = useState({});
@@ -178,7 +232,7 @@ export default function App() {
   ];
 
   // ==========================================
-  // 核心功能函数 (必须定义在 useEffect 和 useMemo 之前)
+  // 核心功能函数
   // ==========================================
 
   const getRateForMonth = (year, monthIndex) => {
@@ -186,33 +240,41 @@ export default function App() {
     return monthlyRates[key] !== undefined ? monthlyRates[key] : exchangeRate;
   };
 
-  // 这里的关键修复：如果 fixedItemsByMonth[key] 是空的，返回 defaultFixedTemplate，防止 .map 崩溃
+  // 修复：增加安全校验，防止 undefined 导致白屏
   const getFixedItemsForMonth = (year, monthIndex) => {
       const key = `${year}-${monthIndex}`;
       const items = fixedItemsByMonth[key];
-      // 增加 safe array check
+      // 确保返回数组，如果不存在或是非法数据，返回默认模版
       if (Array.isArray(items)) return items;
       return defaultFixedTemplate;
   };
 
   const updateFixedItemForMonth = (year, monthIndex, itemId, field, value) => {
       const key = `${year}-${monthIndex}`;
-      const currentList = [...getFixedItemsForMonth(year, monthIndex)].map(i => ({...i}));
+      // 使用默认模板初始化，如果该月没有数据
+      const currentList = Array.isArray(fixedItemsByMonth[key]) ? [...fixedItemsByMonth[key]] : [...defaultFixedTemplate];
+      
       const updatedList = currentList.map(item => item.id === itemId ? { ...item, [field]: value } : item);
       setFixedItemsByMonth(prev => ({ ...prev, [key]: updatedList }));
   };
   
   const addFixedItemForMonth = (year, monthIndex, newItem) => {
       const key = `${year}-${monthIndex}`;
-      const currentList = [...getFixedItemsForMonth(year, monthIndex)].map(i => ({...i}));
+      const currentList = Array.isArray(fixedItemsByMonth[key]) ? [...fixedItemsByMonth[key]] : [...defaultFixedTemplate];
       setFixedItemsByMonth(prev => ({ ...prev, [key]: [...currentList, newItem] }));
   };
 
   const deleteFixedItemForMonth = (year, monthIndex, itemId) => {
       const key = `${year}-${monthIndex}`;
-      const currentList = [...getFixedItemsForMonth(year, monthIndex)].map(i => ({...i}));
+      const currentList = Array.isArray(fixedItemsByMonth[key]) ? [...fixedItemsByMonth[key]] : [...defaultFixedTemplate];
       setFixedItemsByMonth(prev => ({ ...prev, [key]: currentList.filter(i => i.id !== itemId) }));
   };
+
+  // 增加：批量保存（主要用于弹窗编辑后的整体更新）
+  const saveFixedItemsForMonth = (year, monthIndex, newItems) => {
+     const key = `${year}-${monthIndex}`;
+     setFixedItemsByMonth(prev => ({ ...prev, [key]: newItems }));
+  }
 
   const toJPY = (amount, currency, rate) => { 
     const val = parseFloat(amount); return isNaN(val) ? 0 : (currency === 'RMB' ? val * rate : val); 
@@ -251,16 +313,30 @@ export default function App() {
   // Stats
   const weekStats = useMemo(() => {
     let jpyTotal = 0, rmbTotal = 0;
+    
+    // 用于每日消费计算
+    const dailyBreakdown = {}; 
+
     currentTransactions.forEach(t => {
       const amt = parseFloat(t.amount) || 0;
       if (t.currency === 'JPY') jpyTotal += amt; else rmbTotal += amt;
+
+      // 每日累计
+      const dateKey = formatDateTiny(t.date);
+      if (!dailyBreakdown[dateKey]) dailyBreakdown[dateKey] = 0;
+      // 这里简单处理：RMB 暂不按汇率混算，只显示 JPY 总额，或者你可以选择在这里进行汇率转换
+      // 为了准确，我们这里把 RMB 按汇率转成 JPY 加进去，方便看每日总消耗
+      const rate = getRateForMonth(new Date(t.date).getFullYear(), new Date(t.date).getMonth());
+      dailyBreakdown[dateKey] += toJPY(amt, t.currency, rate);
     });
+
     const thisMonthRate = getRateForMonth(currentDate.getFullYear(), currentDate.getMonth());
     const currentFixedItems = getFixedItemsForMonth(currentDate.getFullYear(), currentDate.getMonth());
     const fixedExpense = currentFixedItems.filter(i => i.type === 'expense').reduce((sum, i) => sum + toJPY(i.amount, i.currency, thisMonthRate), 0);
     const fixedIncome = currentFixedItems.filter(i => i.type === 'income').reduce((sum, i) => sum + toJPY(i.amount, i.currency, thisMonthRate), 0);
     const weeklyDailyTotalJPY = jpyTotal + (rmbTotal * thisMonthRate);
-    return { fixedExpense, fixedIncome, weeklyDailyTotalJPY, jpyTotal, rmbTotal, thisMonthRate };
+    
+    return { fixedExpense, fixedIncome, weeklyDailyTotalJPY, jpyTotal, rmbTotal, thisMonthRate, dailyBreakdown };
   }, [fixedItemsByMonth, currentTransactions, monthlyRates, exchangeRate, currentDate]);
 
   const getMonthStats = (year, monthIndex) => {
@@ -277,11 +353,8 @@ export default function App() {
 
   const annualStats = useMemo(() => {
     let expJPY = 0, expRMB = 0, incJPY = 0, incRMB = 0;
-    let totalExpConverted = 0, totalIncConverted = 0;
+    
     Array.from({length: 12}).forEach((_, i) => {
-       const stats = getMonthStats(selectedYear, i);
-       totalExpConverted += stats.totalExpense;
-       totalIncConverted += stats.fixedIncome;
        const items = getFixedItemsForMonth(selectedYear, i);
        items.forEach(item => {
            const amount = parseFloat(item.amount) || 0;
@@ -292,12 +365,19 @@ export default function App() {
            }
        });
     });
+    
     (transactions || []).filter(t => new Date(t.date).getFullYear() === selectedYear).forEach(t => {
       const amount = parseFloat(t.amount) || 0;
       if (t.currency === 'JPY') expJPY += amount; else expRMB += amount;
     });
+
+    // 修复3: 这里的 totalExpConverted 和 totalIncConverted 之前只计算了 JPY，现在需要把 RMB 也算进去
+    // 使用当前的全局汇率 exchangeRate 做一个粗略估算，或者更精确的应该用每月的汇率（但比较复杂，这里用全局汇率做年报表展示足够）
+    const totalExpConverted = expJPY + (expRMB * exchangeRate);
+    const totalIncConverted = incJPY + (incRMB * exchangeRate);
+
     return { expJPY, expRMB, incJPY, incRMB, totalExpConverted, totalBalConverted: totalIncConverted - totalExpConverted };
-  }, [selectedYear, fixedItemsByMonth, transactions, monthlyRates, exchangeRate]);
+  }, [selectedYear, fixedItemsByMonth, transactions, exchangeRate]);
 
   const topPurchases = useMemo(() => {
     return [...(transactions || [])].filter(t => new Date(t.date).getFullYear() === selectedYear).sort((a, b) => toJPY(b.amount, b.currency, exchangeRate) - toJPY(a.amount, a.currency, exchangeRate)).slice(0, 5);
@@ -318,7 +398,7 @@ export default function App() {
   const updateMeal = (d, type, v) => setAllMeals({...allMeals, [getWeekId(currentWeekStart)]: {...(allMeals[getWeekId(currentWeekStart)]||{ Mon: {b:'',l:'',d:''}, Tue: {b:'',l:'',d:''}, Wed: {b:'',l:'',d:''}, Thu: {b:'',l:'',d:''}, Fri: {b:'',l:'',d:''}, Sat: {b:'',l:'',d:''}, Sun: {b:'',l:'',d:''} }), [d]: {...(allMeals[getWeekId(currentWeekStart)]?.[d]||{b:'',l:'',d:''}), [type]: v}}});
   const addTransaction = (e) => { e.preventDefault(); const fd = new FormData(e.target); const dateVal = recordDate || formatDateISO(new Date()); setTransactions([{id: Date.now(), date: dateVal, name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency')}, ...transactions]); e.target.reset(); setRecordDate(dateVal); };
   const deleteTransaction = (id) => setTransactions(transactions.filter(t => t.id !== id));
-  const addFixedItem = (e) => { e.preventDefault(); const fd = new FormData(e.target); const newItem = {id: Date.now(), name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency'), type: fd.get('type')}; addFixedItemForMonth(currentDate.getFullYear(), currentDate.getMonth(), newItem); e.target.reset(); };
+  // const addFixedItem - 已被弹窗取代
   const addInventory = (e) => { if(e.key==='Enter'){ setInventory([...inventory, {id: Date.now(), name: e.target.value, quantity: ''}]); e.target.value=''; } };
   const updateInventoryQty = (id, val) => setInventory(inventory.map(i => i.id === id ? { ...i, quantity: val } : i));
   const deleteInventory = (id) => setInventory(inventory.filter(i => i.id !== id));
@@ -333,8 +413,17 @@ export default function App() {
   const toggleUrgent = (id) => setUrgentTodos(urgentTodos.map(t=>t.id===id?{...t,completed:!t.completed}:t));
   const deleteUrgent = (id) => setUrgentTodos(urgentTodos.filter(t=>t.id!==id));
   const setRateForMonth = (val) => { const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}`; setMonthlyRates(prev => ({ ...prev, [key]: parseFloat(val) })); };
+  
+  // Wrapper for fixed items modal actions
+  const handleFixedAdd = (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const newItem = {id: Date.now(), name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency'), type: fd.get('type')};
+    addFixedItemForMonth(currentDate.getFullYear(), currentDate.getMonth(), newItem);
+    e.target.reset();
+  }
 
-  // 初始化 + 搜救 (放在函数定义之后)
+  // 初始化
   useEffect(() => {
     try {
       let savedData = localStorage.getItem(STORAGE_KEY);
@@ -469,7 +558,6 @@ export default function App() {
                         onClick={() => photo && setPreviewImage(photo)}
                         className={`aspect-square bg-[#fdfcf8] rounded-lg border border-[#f7f3e8] relative overflow-hidden flex items-center justify-center group ${photo ? 'cursor-pointer' : ''}`}
                       >
-                        {/* 修正：object-cover 确保正方形裁剪，显示完美 */}
                         {photo ? <img src={photo} className="w-full h-full object-cover" /> : <span className="text-xs text-[#dccab0] font-bold">{i+1}</span>}
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
                            <span className="text-white text-xs">{i+1}{t.month}</span>
@@ -532,8 +620,12 @@ export default function App() {
             <div className="bg-[#4a403a] text-[#f2e6ce] p-5 rounded-3xl shadow-lg flex flex-col justify-between min-h-[140px] relative overflow-hidden">
                <div>
                  <div className="flex items-center gap-2 text-xs opacity-80 mb-2"><PieChartIcon size={14}/> {showBalance ? t.totalBalance : t.totalExpense}</div>
+                 {/* 修复：这里改为 RMB 估算值，使用汇率转换 */}
                  <div className={`text-2xl sm:text-3xl font-mono font-bold tracking-tight break-all ${showBalance && annualStats.totalBalConverted < 0 ? 'text-[#e07a5f]' : 'text-[#e6b422]'}`} style={{maxWidth: '100%'}}>
-                    {formatMoney(showBalance ? annualStats.totalBalConverted : annualStats.totalExpConverted)}
+                    {displayCurrency === 'JPY' 
+                       ? formatMoneySimple(showBalance ? annualStats.totalBalConverted : annualStats.totalExpConverted)
+                       : formatMoney(showBalance ? annualStats.totalBalConverted : annualStats.totalExpConverted)
+                    }
                  </div>
                </div>
                
@@ -690,6 +782,7 @@ export default function App() {
 
       <div className="px-4 mt-4 space-y-6 pb-20">
         <div className="flex flex-col gap-4">
+           {/* 本周合计卡片 */}
            <div className="bg-white rounded-3xl p-5 border-2 border-[#efeadd] shadow-sm">
               <div className="text-[#8c7b6d] text-sm font-bold mb-1">{t.weeklyTotal}</div>
               <div className="text-2xl font-black text-[#e6b422] font-mono tracking-tight">{formatMoneySimple(weekStats.weeklyDailyTotalJPY)}</div>
@@ -700,8 +793,31 @@ export default function App() {
               </div>
            </div>
            
+           {/* 新增：每日消费 breakdown */}
+           <div className="bg-[#fcfcf9] rounded-2xl p-4 border border-[#efeadd]">
+             <h3 className="text-[#8c7b6d] font-bold text-xs mb-2 flex items-center gap-1"><PieChartIcon size={12}/> {t.dailyBreakdown}</h3>
+             <div className="space-y-1">
+               {Object.entries(weekStats.dailyBreakdown).sort((a,b) => b[0].localeCompare(a[0])).map(([dateStr, total]) => (
+                 <div key={dateStr} className="flex justify-between items-center text-xs">
+                    <span className="text-[#b09f8d] font-mono">{dateStr}</span>
+                    <span className="text-[#5c524b] font-mono font-bold">¥{total.toLocaleString()}</span>
+                 </div>
+               ))}
+               {Object.keys(weekStats.dailyBreakdown).length === 0 && <div className="text-[10px] text-[#dccab0] text-center">{t.noDetails}</div>}
+             </div>
+           </div>
+           
+           {/* 固定收支卡片 (已修改为点击弹窗编辑) */}
            <div className="bg-[#fffbf0] rounded-3xl p-5 border-2 border-[#efeadd] shadow-sm">
-              <div className="flex justify-between items-center mb-2"><div className="text-[#8c7b6d] text-sm font-bold">{t.fixedMonthly}</div><div className="text-xs text-[#b09f8d] bg-[#efeadd]/50 px-2 py-1 rounded">{t.fixedType}</div></div>
+              <div className="flex justify-between items-center mb-2">
+                  <div className="text-[#8c7b6d] text-sm font-bold">{t.fixedMonthly}</div>
+                  <button 
+                    onClick={() => setFixedModalOpen(true)} 
+                    className="flex items-center gap-1 text-xs text-[#e6b422] bg-white border border-[#efeadd] px-2 py-1 rounded-full hover:bg-[#fff9c4] font-bold"
+                  >
+                     <SettingsIcon size={10}/> {t.clickToManage}
+                  </button>
+              </div>
               <div className="flex gap-8">
                 <div className="flex flex-col"><span className="text-xs text-[#b09f8d] flex items-center gap-1"><TrendingDownIcon size={10}/> {t.fixedExp}</span><span className="text-lg font-bold font-mono text-[#e07a5f]">{formatMoneySimple(weekStats.fixedExpense)}</span></div>
                 {showBalance && weekStats.fixedIncome > 0 && <div className="flex flex-col"><span className="text-xs text-[#b09f8d] flex items-center gap-1"><TrendingUpIcon size={10}/> {t.income}</span><span className="text-lg font-bold font-mono text-[#7ca982]">{formatMoneySimple(weekStats.fixedIncome)}</span></div>}
@@ -793,41 +909,21 @@ export default function App() {
           </div>
         </Card>
         
-        <Card title={t.addFixed} icon={<WalletIcon size={18}/>}>
-          <div className="space-y-2 mb-4">
-            {getFixedItemsForMonth(currentDate.getFullYear(), currentDate.getMonth()).map(item => (
-              <div key={item.id} className="flex justify-between items-center text-sm p-2 bg-white rounded-lg border border-[#f7f3e8]">
-                <span className="text-[#5c524b]">{item.name}</span>
-                <div className="flex items-center gap-2">
-                   <input 
-                      type="number" 
-                      value={item.amount}
-                      onChange={(e) => updateFixedItemForMonth(currentDate.getFullYear(), currentDate.getMonth(), item.id, 'amount', e.target.value)}
-                      className="w-16 text-right font-mono font-bold text-[#e07a5f] bg-transparent border-b border-dashed border-[#e6dcc0] focus:border-[#e6b422] outline-none"
-                   />
-                   <span className="text-[10px] text-[#b09f8d]">{item.currency}</span>
-                   <button onClick={() => deleteFixedItemForMonth(currentDate.getFullYear(), currentDate.getMonth(), item.id)} className="text-[#dccab0] hover:text-[#e07a5f]"><Trash2Icon size={12}/></button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <form onSubmit={(e) => {
-              e.preventDefault();
-              const fd = new FormData(e.target);
-              const newItem = {id: Date.now(), name: fd.get('name'), amount: parseFloat(fd.get('amount')), currency: fd.get('currency'), type: fd.get('type')};
-              addFixedItemForMonth(currentDate.getFullYear(), currentDate.getMonth(), newItem);
-              e.target.reset();
-          }} className="grid grid-cols-4 gap-2">
-             <input name="name" placeholder={t.itemName} required className="col-span-4 p-2 bg-white border border-[#efeadd] rounded-lg text-xs outline-none" />
-             <input name="amount" type="number" placeholder="金额" required className="col-span-2 p-2 bg-white border border-[#efeadd] rounded-lg text-xs outline-none" />
-             <select name="currency" className="col-span-1 p-2 bg-white border border-[#efeadd] rounded-lg text-xs outline-none"><option value="JPY">JPY</option><option value="RMB">RMB</option></select>
-             <select name="type" className="col-span-1 p-2 bg-white border border-[#efeadd] rounded-lg text-xs outline-none"><option value="expense">{t.expense}</option><option value="income">{t.income}</option></select>
-             <button className="col-span-4 p-2 bg-[#8c7b6d] text-white text-xs rounded-lg hover:bg-[#6d5e50] font-bold">{t.addFixed}</button>
-          </form>
-        </Card>
+        {/* 固定支出添加表单移到了 Modal 中，这里不再重复显示 */}
       </div>
       <ImageModal src={previewImage} onClose={() => setPreviewImage(null)} />
       <RestoreModal isOpen={restoreModalOpen} onClose={() => setRestoreModalOpen(false)} onRestore={handleManualRestoreWrapper} onFileUpload={handleFileImport} keys={foundLegacyKeys} t={t} />
+      <FixedItemsModal 
+        isOpen={fixedModalOpen} 
+        onClose={() => setFixedModalOpen(false)} 
+        items={getFixedItemsForMonth(currentDate.getFullYear(), currentDate.getMonth())}
+        onAdd={handleFixedAdd}
+        onUpdate={(id, f, v) => updateFixedItemForMonth(currentDate.getFullYear(), currentDate.getMonth(), id, f, v)}
+        onDelete={(id) => deleteFixedItemForMonth(currentDate.getFullYear(), currentDate.getMonth(), id)}
+        t={t}
+        year={currentDate.getFullYear()}
+        month={currentDate.getMonth()}
+      />
     </AppWrapper>
   );
 

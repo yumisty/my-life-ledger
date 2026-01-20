@@ -32,7 +32,7 @@ const ArrowRightIcon = (p) => <IconWrapper {...p}><line x1="5" y1="12" x2="19" y
 const DownloadIcon = (p) => <IconWrapper {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></IconWrapper>;
 const EyeIcon = (p) => <IconWrapper {...p}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></IconWrapper>;
 const EyeOffIcon = (p) => <IconWrapper {...p}><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></IconWrapper>;
-const GlobeIcon = (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></IconWrapper>;
+const GlobeIcon = (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/></IconWrapper>;
 const TargetIcon = (p) => <IconWrapper {...p}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></IconWrapper>;
 const TrophyIcon = (p) => <IconWrapper {...p}><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10"/><path d="M17 4v3a5 5 0 0 1-5 5h0a5 5 0 0 1-5-5V4"/><path d="M5 9v2a2 2 0 0 0 2 2h0"/><path d="M19 11v-2a2 2 0 0 0-2-2h0"/></IconWrapper>;
 const PenToolIcon = (p) => <IconWrapper {...p}><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></IconWrapper>;
@@ -171,7 +171,15 @@ const TRANSLATIONS = {
   en: { appTitle: "Life Ledger", backHome: "Back", totalExpense: "Total Exp", totalBalance: "Total Bal", exchangeRate: "Rate(1RMB)", supplies: "Supplies", inventory: "Pantry", wishlist: "Wishlist", inventoryPlaceholder: "Add...", wishlistPlaceholder: "Item...", qty: "Qty", clickToManage: "Manage", fixedExp: "Fixed", income: "Income", dailyExp: "Daily", monthly: "Month", month: "Mon", weekView: "Week", weekGoal: "Goals", addGoal: "Task...", record: "Add", recordBtn: "Save", itemName: "Item", date: "Date", amount: "Amt", mealPlan: "Meals", fixedMonthly: "Monthly Fixed", fixedType: "Recurring", addFixed: "Add", expense: "Exp", details: "Calendar", noDetails: "Empty", yearlyGoalsTitle: "Yearly", myGoals: "Goals", addYearlyGoal: "Add...", yearReview: "Review", reviewPlaceholder: "Notes...", topPurchases: "Top 5", topPurchasesSub: "Spending", modeExpenditure: "Exp Only", modeBalance: "Balance", photoGallery: "Gallery", photoGallerySub: "Monthly pic", uploadPhoto: "Upload", urgentMemo: "Urgent", addUrgent: "Urgent...", switchCurrency: "Switch", actualBreakdown: "Actual Breakdown", weeklyTotal: "Weekly Total", breakdown: "Breakdown", monthRate: "Month Rate", restoreData: "Restore", restoreTitle: "Data Recovery", restoreDesc: "Found legacy data", cancel: "Cancel", restoreSuccess: "Restored!", importFile: "Import from file (.json)", importSuccess: "Imported Successfully!", dailyBreakdown: "Daily Breakdown", dailyTotal: "Daily Total", menu: "Menu", switchLang: "Language", hideBalance: "View Expense", showBalance: "View Balance", exportData: "Export", resetData: "Reset" }
 };
 
-const getMonday = (d) => { const day = d.getDay(); const diff = d.getDate() - day + (day === 0 ? -6 : 1); const monday = new Date(d.setDate(diff)); monday.setHours(0, 0, 0, 0); return monday; };
+// FIX: getMonday was mutating the original date object!
+const getMonday = (d) => { 
+  const date = new Date(d); // Clone the date first
+  const day = date.getDay(); 
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1); 
+  date.setDate(diff);
+  date.setHours(0, 0, 0, 0); 
+  return date; 
+};
 const getWeekId = (date) => { const d = new Date(date); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + 4 - (d.getDay() || 7)); const year = d.getFullYear(); const weekNo = Math.ceil((((d - new Date(year, 0, 1)) / 86400000) + 1) / 7); return `${year}-w${weekNo}`; };
 const formatDateShort = (date) => `${date.getMonth() + 1}.${date.getDate()}`;
 const formatDateISO = (date) => { const offset = date.getTimezoneOffset(); date = new Date(date.getTime() - (offset*60*1000)); return date.toISOString().split('T')[0]; };
@@ -298,9 +306,19 @@ export default function App() {
   const currentWeekId = getWeekId(currentWeekStart);
   const currentTodos = allTodos[currentWeekId] || [];
   const currentMeals = allMeals[currentWeekId] || { Mon: {b:'',l:'',d:''}, Tue: {b:'',l:'',d:''}, Wed: {b:'',l:'',d:''}, Thu: {b:'',l:'',d:''}, Fri: {b:'',l:'',d:''}, Sat: {b:'',l:'',d:''}, Sun: {b:'',l:'',d:''} };
+  
+  // FIX: Using string comparison for dates to avoid timezone issues
+  const getISODateStr = (d) => {
+    const offset = d.getTimezoneOffset();
+    const local = new Date(d.getTime() - (offset * 60 * 1000));
+    return local.toISOString().split('T')[0];
+  };
+
+  const weekStartStr = getISODateStr(currentWeekStart);
+  const weekEndStr = getISODateStr(currentWeekEnd);
+
   const currentTransactions = (transactions || []).filter(t => {
-    const tDate = new Date(t.date);
-    return tDate >= currentWeekStart && tDate <= new Date(currentWeekEnd.getTime() + 86400000 - 1);
+     return t.date >= weekStartStr && t.date <= weekEndStr;
   }).sort((a, b) => new Date(b.date) - new Date(a.date));
 
   // Stats
@@ -323,11 +341,10 @@ export default function App() {
     const fixedExpense = currentFixedItems.filter(i => i.type === 'expense').reduce((sum, i) => sum + toJPY(i.amount, i.currency, thisMonthRate), 0);
     const fixedIncome = currentFixedItems.filter(i => i.type === 'income').reduce((sum, i) => sum + toJPY(i.amount, i.currency, thisMonthRate), 0);
     
-    // 计算本周合计（用于卡片显示）
-    const totalJPY = jpyTotal + (rmbTotal * thisMonthRate);
-    const totalRMB = totalJPY / thisMonthRate;
-
-    return { fixedExpense, fixedIncome, totalJPY, totalRMB, jpyTotal, rmbTotal, thisMonthRate, dailyBreakdown };
+    const weeklyDailyTotalJPY = jpyTotal + (rmbTotal * thisMonthRate);
+    
+    // FIX: Returned key was mismatching JSX expectation
+    return { fixedExpense, fixedIncome, weeklyDailyTotalJPY, jpyTotal, rmbTotal, thisMonthRate, dailyBreakdown };
   }, [fixedItemsByMonth, currentTransactions, monthlyRates, exchangeRate, currentDate]);
 
   const getMonthStats = (year, monthIndex) => {
@@ -413,13 +430,11 @@ export default function App() {
   const handleDayClick = (day) => {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
-      // 构建日期字符串匹配
       const dateStr = `${year}-${String(month+1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       
       const dayTrans = (transactions || []).filter(t => t.date === dateStr);
       const displayDate = `${month+1}.${day}`;
       
-      // 如果点击的是已经选中的日期，则收起（toggle）
       if (selectedDayDetails && selectedDayDetails.date === displayDate) {
           setSelectedDayDetails(null);
       } else {
@@ -773,7 +788,7 @@ export default function App() {
       <div className="bg-[#f2e6ce] sticky top-0 z-50 shadow-sm border-b border-[#e6dcc0]">
         <div className="max-w-3xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-2">
-            <button onClick={() => setView('year')} className="flex items-center gap-1 text-[#8c7b6d] text-sm font-bold hover:text-[#5c524b] transition-colors"><HomeIcon size={16}/> {t.backHome}</button>
+            <button onClick={() => setView('year')} className="flex items-center gap-1 text-[#8c7b6d] text-sm font-bold hover:text-[#5c524b] mb-2 transition-colors"><HomeIcon size={16}/> {t.backHome}</button>
             {/* 顶部菜单 */}
              <div className="flex items-center gap-2 relative">
                <button onClick={() => setMenuOpen(!menuOpen)} className="bg-white/80 p-2 rounded-full text-[#8c7b6d] border border-[#efeadd] hover:text-[#e6b422]"><MenuIcon size={18}/></button>
@@ -843,9 +858,22 @@ export default function App() {
            {/* 新增：日历视图明细 - 下方直接显示详情 */}
            <div className="bg-white rounded-3xl border-2 border-[#efeadd] p-4 transition-all duration-300">
              <h3 className="text-[#8c7b6d] font-bold text-sm mb-3 pl-1 flex items-center gap-2"><LayoutIcon size={16}/> {t.details}</h3>
+             
+             {/* FIX: Use currentDate safely (it's not mutated anymore) to generate grid */}
              <div className="grid grid-cols-7 gap-1">
                 {['一','二','三','四','五','六','日'].map(d => <div key={d} className="text-center text-[10px] text-[#b09f8d] mb-2">{d}</div>)}
-                {/* 简单的日历逻辑：显示当前月的所有天数 */}
+                
+                {/* 1. 填充空白 */}
+                {(() => {
+                    const firstDayObj = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+                    const dayOfWeek = firstDayObj.getDay(); 
+                    const emptyCells = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                    return Array.from({length: emptyCells}).map((_, i) => (
+                        <div key={`empty-${i}`} className="aspect-square"></div>
+                    ));
+                })()}
+
+                {/* 2. 渲染真实日期 */}
                 {Array.from({length: getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth())}).map((_, i) => {
                    const day = i + 1;
                    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth()+1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
